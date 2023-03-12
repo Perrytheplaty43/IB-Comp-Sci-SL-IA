@@ -322,12 +322,7 @@ class Decoder {
     }
 }
 
-let that
-
 class Server {
-    constructor() {
-        that = this
-    }
     getBestMatch(lat, lon, alt, el, az) {
         let aircraftInRange = []
         let elAzDistanceCalculator = new ElAzCalc()
@@ -353,6 +348,7 @@ class Server {
         }
     }
     createServer(serverUrl) {
+        let that = this
         this.server = http.createServer(function (req, res) {
             const { method, url } = req;
             let surl = new URL(url, serverUrl);
