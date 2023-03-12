@@ -1,15 +1,15 @@
+//Delcairing Node Libraries
 let net = require('net');
 let http = require('http');
 
 let client = new net.Socket();
 client.connect(30002, '10.0.0.78', function () {
     console.log('Connected');
-    client.write('Hello, server! Love, Client.');
-});
+    client.write('Hello, server! Love, Client.')
+})
 
 class ElAzCalc {
     calculate(userLat, userLon, lat, lon, userAlt, alt) {
-        //logging receiver range stats
         let dLat = (userLat - lat) * -1
         let latDistance = 0.62137 * (Math.abs(dLat) * 110.574)
 
@@ -37,6 +37,15 @@ class Aircrafts {
     }
     addContact(contact) {
         this.contactList.push(contact)
+    }
+    refreshList() {
+        let timeNow = Date.now()
+
+        for (let i in this.contactList) {
+            if (this.contactList[i].time - timeNow > 60000) {
+                this.contactList.splice(i, 1)
+            }
+        }
     }
 }
 
@@ -354,6 +363,7 @@ class Server {
             let surl = new URL(url, serverUrl);
 
             if (method == 'GET' && surl.pathname == '/scan') {
+                aircraftManager.refreshList()
                 let params = surl.searchParams
                 let lat = params.get("lat")
                 let lon = params.get("lon")
@@ -384,4 +394,4 @@ server.server.listen(80)
 
 client.on('close', function () {
     console.log('Connection closed');
-});
+})
