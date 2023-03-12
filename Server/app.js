@@ -41,12 +41,12 @@ class Aircrafts {
 }
 
 class Contact {
+    #charDecode = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ#####_###############0123456789######"
     constructor(downlinkFormat, xpdrCapability, icao) {
         this.downlinkFormat = downlinkFormat
         this.xpdrCapability = xpdrCapability
         this.icao = icao
         this.time = Date.now()
-        this.#charDecode = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ#####_###############0123456789######"
     }
     updateInfo(tc, buffer, bin) {
         this.time = Date.now()
@@ -291,7 +291,7 @@ class Decoder {
     }
 
     decode(buffer) {
-        for (i in buffer) {
+        for (let i in buffer) {
             if (buffer.length < 1) continue
             let bin = this.#hex2bin(buffer[i])
             let downlinkFormat = parseInt(bin.substring(0, 5), 2)
@@ -322,8 +322,37 @@ class Decoder {
     }
 }
 
+let that
+
 class Server {
-    constructor(serverUrl) {
+    constructor() {
+        that = this
+    }
+    getBestMatch(lat, lon, alt, el, az) {
+        let aircraftInRange = []
+        let elAzDistanceCalculator = new ElAzCalc()
+        for (let i in aircraftManager.contactList) {
+            let elAzDistance = elAzDistanceCalculator.calculate(lat, lon, aircraftManager.contactList[i].lat, aircraftManager.contactList[i].lon, alt, aircraftManager.contactList[i].alt)
+            if (elAzDistance[0] < 80) {
+                aircraftInRange.push([aircraftManager.contactList[i], elAzDistance])
+            }
+        }
+        let bestMatch = [null, null, Number.MAX_SAFE_INTEGER]
+        if (aircraftInRange) {
+            for (let i in aircraftInRange) {
+                let score = Math.sqrt(Math.abs(el - aircraftInRange[i][1][2]) ** 2) + (Math.abs(az - aircraftInRange[i][1][1]) ** 2)
+                if (score < bestMatch[2]) {
+                    console.log(bestMatch)
+                    aircraftInRange[i].push(score)
+                    bestMatch = aircraftInRange[i]
+                }
+            }
+            return bestMatch[0].getInfo()
+        } else {
+            return "No Aircraft Detected"
+        }
+    }
+    createServer(serverUrl) {
         this.server = http.createServer(function (req, res) {
             const { method, url } = req;
             let surl = new URL(url, serverUrl);
@@ -337,34 +366,13 @@ class Server {
                 let el = params.get("el")
                 let az = params.get("az")
 
-                res.write(JSON.stringify(getBestMatch(lat, lon, alt, el, az)))
+                res.write(JSON.stringify(that.getBestMatch(lat, lon, alt, el, az)))
                 res.end()
                 return
             }
         })
     }
-    getBestMatch(lat, lon, alt, el, az) {
-        let aircraftInRange = []
-        let elAzDistanceCalculator = new ElAzCalc()
-        for (i in aircraftManager.contactList) {
-            let elAzDistance = elAzDistanceCalculator.calculate(lat, lon, aircraftManager.contactList[i].lat, aircraftManager.contactList[i].lon, alt, aircraftManager.contactList[i].alt)
-            if (elAzDistance[0] < 80) {
-                aircraftInRange.push([aircraftManager.contactList[i], elAzDistance])
-            }
-        }
-        let bestMatch = [null, null, MAX_SAFE_INTEGER]
-        if (aircraftInRange) {
-            for (i in aircraftInRange) {
-                let score = Math.sqrt(Math.abs(el - aircraftInRange[1][2]) ** 2) + (Math.abs(az - aircraftInRange[1][1]) ** 2)
-                if (score < bestMatch[3]) {
-                    bestMatch = aircraftInRange.push(score)
-                }
-            }
-            return bestMatch[0].getInfo()
-        } else {
-            return "No Aircraft Detected"
-        }
-    }
+
 }
 
 let decoder = new Decoder()
@@ -374,7 +382,8 @@ client.on('data', function (data) {
     decoder.decode(packets)
 })
 
-let server = new Server("http://10.0.0.211/")
+let server = new Server()
+server.createServer("http://10.0.0.211/")
 server.server.listen(80)
 
 client.on('close', function () {
