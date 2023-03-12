@@ -5,13 +5,12 @@ import { DeviceMotion } from 'expo-sensors'
 import * as Location from 'expo-location'
 
 export default function App() {
-
     const [location, setLocation] = useState(null)
     const [status, requestPermission] = Location.useForegroundPermissions()
     const [data, setData] = useState({})
 
     useEffect(() => {
-        _subscribe()
+        _subscribe();
         (async () => {
 
             let { status } = await Location.requestForegroundPermissionsAsync()
@@ -33,8 +32,8 @@ export default function App() {
     }, [])
 
     const _setInterval = () => {
-        DeviceMotion.setUpdateInterval(77)
-    }
+        DeviceMotion.setUpdateInterval(77);
+    };
 
     const _subscribe = () => {
         //Adding the Listener
@@ -42,7 +41,7 @@ export default function App() {
             setData(devicemotionData.rotation)
         })
         //Calling setInterval Function after adding the listener
-        _setInterval()
+        _setInterval();
     }
 
     const _unsubscribe = () => {
@@ -51,16 +50,31 @@ export default function App() {
     }
 
     function getAz() {
-        return (data.alpha * (180 / Math.PI)) < 0 ? 180 + Math.abs((data.alpha * (180 / Math.PI))) : Math.abs(Math.abs((data.alpha * (180 / Math.PI))) - 180)
+        if (data) {
+            return (data.alpha * (180 / Math.PI)) < 0 ? 180 + Math.abs((data.alpha * (180 / Math.PI))) : Math.abs(Math.abs((data.alpha * (180 / Math.PI))) - 180)
+        } else {
+            return null
+        }
     }
 
     function getEl() {
-        return 90 - (data.beta * (180 / Math.PI))
+        if (data) {
+            return 90 - (data.beta * (180 / Math.PI))
+        } else {
+            return null
+        }
     }
 
     function getLoc() {
         if (location) {
-            return [location.latitude, location.longitude, location.altitude]
+            if (location.latitude && location.longitude && location.altitude) {
+                console.log([location.latitude, location.longitude, location.altitude])
+                return [location.latitude, location.longitude, location.altitude]
+            } else {
+                return [null, null, null]
+            }
+        } else {
+            return [null, null, null]
         }
     }
 
@@ -86,4 +100,4 @@ const styles = StyleSheet.create({
         fontWeight: 900,
         fontSize: 30,
     }
-})
+});
