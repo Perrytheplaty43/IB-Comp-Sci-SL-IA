@@ -17,17 +17,11 @@ class ElAzCalc {
         let lonDistance = 0.62137 * (Math.abs(dLon) * (111.320 * Math.cos(lat * (Math.PI / 180))))
 
         let distance = Math.sqrt(latDistance ** 2 + lonDistance ** 2)
-        let azimuth = Math.atan(dLon / dLat) * (180 / Math.PI)
-        if (azimuth < 0) azimuth += 360
-        if (dLon < 0 && dLat < 0) azimuth += 180
-        if (dLon > 0 && dLat < 0) azimuth += 180
-        if (azimuth > 360) azimuth -= 360
 
         //meters
         let dAlt = (alt - userAlt) * 0.0003048
-        let el = Math.atan(dAlt / distance) * (180 / Math.PI)
 
-        return [distance, azimuth, el]
+        return [lonDistance, latDistance, dAlt]
     }
 }
 
@@ -337,23 +331,50 @@ class Server {
         let elAzDistanceCalculator = new ElAzCalc()
         for (let i in aircraftManager.contactList) {
             let elAzDistance = elAzDistanceCalculator.calculate(lat, lon, aircraftManager.contactList[i].lat, aircraftManager.contactList[i].lon, alt, aircraftManager.contactList[i].alt)
-            if (elAzDistance[0] < 80) {
-                aircraftInRange.push([aircraftManager.contactList[i], elAzDistance])
-            }
+            aircraftInRange.push([aircraftManager.contactList[i], elAzDistance])
         }
         let bestMatch = [null, null, Number.MAX_SAFE_INTEGER]
-        if (aircraftInRange) {
-            for (let i in aircraftInRange) {
-                let score = Math.sqrt(Math.abs(el - aircraftInRange[i][1][2]) ** 2) + (Math.abs(az - aircraftInRange[i][1][1]) ** 2)
-                if (score < bestMatch[2]) {
-                    console.log(bestMatch)
+        let allScores = []
+
+        let elRads = el * (Math.PI / 180)
+        let azRads = az * (Math.PI / 180)
+        let cameraVector = [Math.cos(elRads) * Math.sin(-azRads), Math.cos(elRads) * Math.cos(-azRads), Math.sin(elRads)]
+        for (let i in aircraftInRange) {
+            let planeVector = aircraftInRange[i][1]
+
+            let dotProduct = cameraVector[0] * planeVector[0] + cameraVector[1] * planeVector[1] + cameraVector[2] * planeVector[2]
+            let planeVectorMag = Math.sqrt(planeVector[0] ** 2 + planeVector[1] ** 2 + planeVector[2] ** 2)
+
+            if (planeVectorMag > 20000) {
+                let score = 500
+                if (score < bestMatch[2] && score < 55) {
                     aircraftInRange[i].push(score)
                     bestMatch = aircraftInRange[i]
+                    allScores.push(aircraftInRange[i])
                 }
+                continue
             }
+            let score = Math.abs(Math.acos(dotProduct / planeVectorMag)) * (180 / Math.PI)
+            if (score < bestMatch[2] && score < 55) {
+                aircraftInRange[i].push(score)
+                bestMatch = aircraftInRange[i]
+                allScores.push(aircraftInRange[i])
+            }
+        }
+        allScores.sort((a, b) => {
+            if (a[2] < b[2]) {
+                return -1;
+            }
+            if (a[2] > b[2]) {
+                return 1;
+            }
+            return 0;
+        })
+        console.log(allScores)
+        if (bestMatch[0]) {
             return bestMatch[0].getInfo()
         } else {
-            return "No Aircraft Detected"
+            return "none"
         }
     }
     createServer(serverUrl) {
@@ -363,7 +384,6 @@ class Server {
             let surl = new URL(url, serverUrl);
 
             if (method == 'GET' && surl.pathname == '/scan') {
-                aircraftManager.refreshList()
                 let params = surl.searchParams
                 let lat = params.get("lat")
                 let lon = params.get("lon")
@@ -384,6 +404,7 @@ class Server {
 let decoder = new Decoder()
 
 client.on('data', function (data) {
+    aircraftManager.refreshList()
     let packets = data.toString().replace(/\n|\*/g, "").split(";")
     decoder.decode(packets)
 })
