@@ -2,6 +2,8 @@
 let net = require('net');
 let http = require('http');
 
+const max_acceptable_angle = 27
+
 let client = new net.Socket();
 client.connect(30002, '10.0.0.78', function () {
     console.log('Connected');
@@ -36,7 +38,7 @@ class Aircrafts {
         let timeNow = Date.now()
 
         for (let i in this.contactList) {
-            if (this.contactList[i].time - timeNow > 60000) {
+            if (timeNow - this.contactList[i].time > 60000) {
                 this.contactList.splice(i, 1)
             }
         }
@@ -200,27 +202,46 @@ class Contact {
         }
     }
     getInfo() {
-        return {
-            "downlink format": this.downlinkFormat,
-            "transponder capability": this.xpdrCapability,
-            "icao": this.icao,
-            "time": this.time,
-            "emitter category": this.ec,
-            "callsign": this.callsign,
-            "surveillance status": this.ss,
-            "single antenna": this.NICsb,
-            "altitude": this.alt,
-            "latitude": this.lat,
-            "longitude": this.lon,
-            "subtype": this.st,
-            "velocity uncertanty": this.nac,
-            "ground speed": this.Gspd,
-            "heading": this.hdg,
-            "vertical rate": this.vr,
-            "vertical rate source": this.vrSrc,
-            "ias": this.ias,
-            "tas": this.tas,
-        }
+        return fetch(`https://hexdb.io/api/v1/aircraft/${this.icao}`,
+            { method: 'GET' }
+        )
+            .catch(() => {return "none"})
+            .then(response => response.text())
+            .then(data => {
+                data = JSON.parse(data)
+                this.manufacturer = data["Manufacturer"]
+                this.operatorFlagCode = data["OperatorFlagCode"]
+                this.registeredOwners = data["RegisteredOwners"]
+                this.reg = data["Registration"]
+                this.type = data["Type"]
+
+                return {
+                    "downlink format": this.downlinkFormat,
+                    "transponder capability": this.xpdrCapability,
+                    "icao": this.icao,
+                    "time": this.time,
+                    "emitter category": this.ec,
+                    "callsign": this.callsign,
+                    "surveillance status": this.ss,
+                    "single antenna": this.NICsb,
+                    "altitude": this.alt,
+                    "latitude": this.lat,
+                    "longitude": this.lon,
+                    "subtype": this.st,
+                    "velocity uncertanty": this.nac,
+                    "ground speed": this.Gspd,
+                    "heading": this.hdg,
+                    "vertical rate": this.vr,
+                    "vertical rate source": this.vrSrc,
+                    "ias": this.ias,
+                    "tas": this.tas,
+                    "manufacturer": this.manufacturer,
+                    "operator flag code": this.operatorFlagCode,
+                    "registered owners": this.registeredOwners,
+                    "registration": this.reg,
+                    "type": this.type,
+                }
+            })
     }
 }
 
@@ -326,7 +347,7 @@ class Decoder {
 }
 
 class Server {
-    getBestMatch(lat, lon, alt, el, az) {
+    async getBestMatch(lat, lon, alt, el, az) {
         let aircraftInRange = []
         let elAzDistanceCalculator = new ElAzCalc()
         for (let i in aircraftManager.contactList) {
@@ -347,15 +368,16 @@ class Server {
 
             if (planeVectorMag > 20000) {
                 let score = 500
-                if (score < bestMatch[2] && score < 55) {
+                if (score < bestMatch[2] && score < max_acceptable_angle) {
                     aircraftInRange[i].push(score)
                     bestMatch = aircraftInRange[i]
                     allScores.push(aircraftInRange[i])
                 }
                 continue
             }
+
             let score = Math.abs(Math.acos(dotProduct / planeVectorMag)) * (180 / Math.PI)
-            if (score < bestMatch[2] && score < 55) {
+            if (score < bestMatch[2] && score < max_acceptable_angle) {
                 aircraftInRange[i].push(score)
                 bestMatch = aircraftInRange[i]
                 allScores.push(aircraftInRange[i])
@@ -370,9 +392,8 @@ class Server {
             }
             return 0;
         })
-        console.log(allScores)
         if (bestMatch[0]) {
-            return bestMatch[0].getInfo()
+            return await bestMatch[0].getInfo()
         } else {
             return "none"
         }
@@ -392,9 +413,12 @@ class Server {
                 let el = params.get("el")
                 let az = params.get("az")
 
-                res.write(JSON.stringify(that.getBestMatch(lat, lon, alt, el, az)))
-                res.end()
-                return
+                return that.getBestMatch(lat, lon, alt, el, az)
+                    .then(bestMatch => {
+                        res.write(JSON.stringify(bestMatch))
+                        res.end()
+                        return
+                    })
             }
         })
     }

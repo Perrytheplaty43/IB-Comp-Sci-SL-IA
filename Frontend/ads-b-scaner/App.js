@@ -77,10 +77,10 @@ export default function App() {
     }
 
     function getLoc() {
-        //TODO: convert alt from meters to feet for the api
         if (location) {
             if (location.latitude && location.longitude && location.altitude) {
-                return [location.latitude, location.longitude, location.altitude]
+                let altMeters = location.altitude * 3.281
+                return [location.latitude, location.longitude, altMeters]
             } else {
                 return [null, null, null]
             }
@@ -123,14 +123,11 @@ export default function App() {
     return (
         <View style={styles.container}>
             {isLoading &&
-                <ActivityIndicator size="large" style={styles.loading} color={"#242424"} />
+                <ActivityIndicator size="large" style={styles.loading} color="white" borderColor="black" borderWidth={5} backgroundColor="transparent"/>
             }
             {!toShowInfo &&
                 <Text style={styles.text}>Point your mobile device at an aircraft to identify it and receive its information...</Text>
             }
-            {/* <Text style={styles.gyro}>az: {getAz()}</Text>
-            <Text style={styles.gyro}>el: {getEl()}</Text>
-            <Text style={styles.gyro}>loc: {getLoc()[0]}, {getLoc()[1]}, {getLoc()[2]}</Text> */}
             {!displayingInfo &&
                 <Camera style={styles.camera}>
                 </Camera>
@@ -139,10 +136,12 @@ export default function App() {
                 <Text style={styles.info}>No Aircraft Detected</Text>
             }
             {toShow &&
-                <Text>
+                <Text style={styles.dataText}>
                     <Text style={styles.info}>
                         HEX: <Text style={styles.data}>{info["icao"]}</Text>{"\n"}
                         Callsign: <Text style={styles.data}>{!info["callsign"] ? "N/A" : info["callsign"]}</Text>{"\n"}
+                        Type: <Text style={styles.data}>{!info["type"] ? "N/A" : info["type"]}</Text>{"\n"}
+                        Reg: <Text style={styles.data}>{!info["registration"] ? "N/A" : info["registration"]}</Text>{"\n"}
                     </Text>
                     {"\n"}
                     <Text style={styles.info2}>
@@ -150,14 +149,14 @@ export default function App() {
                         Groundspeed: <Text style={styles.data2}>{Math.round(info["ground speed"])} kts</Text>{"\n"}
                     </Text>
                     {"\n"}
-                    {"\n"}
                     <Text style={styles.info3}>
                         Lat, Lon: <Text style={styles.data3}>{info["latitude"].toFixed(3)}°, {info["longitude"].toFixed(3)}°</Text>{"\n"}
                         Heading: <Text style={styles.data3}>{Math.round(info["heading"])}°</Text>{"\n"}
                         Vertical Rate: <Text style={styles.data3}>{info["vertical rate"]} ft/m</Text>{"\n"}
                         Emitter Category: <Text style={styles.data3}>{info["emitter category"]}</Text>{"\n"}
+                        Manufacturer: <Text style={styles.data3}>{!info["manufacturer"] ? "N/A" : info["manufacturer"]}</Text>{"\n"}
+                        Owners: <Text style={styles.data3}>{!info["registered owners"] ? "N/A" : info["registered owners"]}</Text>{"\n"}
                     </Text>
-                    {"\n"}
                     {"\n"}
                     <Text style={styles.info4}>
                         Downlink Format: <Text style={styles.data4}>{info["downlink format"]}</Text>{"\n"}
@@ -170,6 +169,7 @@ export default function App() {
                         Vertical Rate Source: <Text style={styles.data4}>{info["vertical rate source"]}</Text>{"\n"}
                         IAS: <Text style={styles.data4}>{!info["ias"] ? "N/A" : info["ias"] + " kts"}</Text>{"\n"}
                         TAS: <Text style={styles.data4}>{!info["tas"] ? "N/A" : info["tas"] + " kts"}</Text>{"\n"}
+                        Operator Flag Code: <Text style={styles.data4}>{!info["registered owners"] ? "N/A" : info["registered owners"]}</Text>{"\n"}
                     </Text>
                 </Text>
             }
@@ -188,6 +188,10 @@ export default function App() {
     )
 }
 const styles = StyleSheet.create({
+    dataText: {
+        position: 'absolute',
+        top: 20
+    },
     button: {
         width: 100,
         height: 100,
@@ -204,7 +208,7 @@ const styles = StyleSheet.create({
     container: {
         paddingLeft: 30,
         paddingRight: 30,
-        marginTop: 50,
+        marginTop: 35,
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
@@ -222,45 +226,45 @@ const styles = StyleSheet.create({
     info: {
         fontFamily: 'Roboto',
         fontWeight: 900,
-        fontSize: 40,
+        fontSize: 35,
     },
     info2: {
         fontFamily: 'Roboto',
         fontWeight: 900,
-        fontSize: 35,
+        fontSize: 30,
     },
     info3: {
         fontFamily: 'Roboto',
         fontWeight: 900,
-        fontSize: 25,
+        fontSize: 20,
     },
     info4: {
         fontFamily: 'Roboto',
         fontWeight: 900,
-        fontSize: 15,
+        fontSize: 13,
     },
     data: {
         fontFamily: 'Roboto',
         fontWeight: 900,
-        fontSize: 40,
+        fontSize: 35,
         color: '#858585'
     },
     data2: {
         fontFamily: 'Roboto',
         fontWeight: 900,
-        fontSize: 35,
+        fontSize: 30,
         color: '#858585'
     },
     data3: {
         fontFamily: 'Roboto',
         fontWeight: 900,
-        fontSize: 25,
+        fontSize: 20,
         color: '#858585'
     },
     data4: {
         fontFamily: 'Roboto',
         fontWeight: 900,
-        fontSize: 15,
+        fontSize: 13,
         color: '#858585'
     },
     loading: {
@@ -271,7 +275,11 @@ const styles = StyleSheet.create({
         bottom: 0,
         alignItems: 'center',
         justifyContent: 'center',
-        transform: [{ scaleX: 2 }, { scaleY: 2 }]
+        color: "white",
+        borderColor: "black",
+        borderWidth: 5,
+        transform: [{ scaleX: 2 }, { scaleY: 2 }],
+        zIndex: 99
     },
     camera: {
         flexGrow: 1,
