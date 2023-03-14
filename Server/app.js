@@ -2,8 +2,10 @@
 let net = require('net');
 let http = require('http');
 
+//Setting tolerance constant
 const max_acceptable_angle = 27
 
+//connecting to ads-b raw data tcp socket
 let client = new net.Socket();
 client.connect(30002, '10.0.0.78', function () {
     console.log('Connected');
@@ -12,15 +14,18 @@ client.connect(30002, '10.0.0.78', function () {
 
 class ElAzCalc {
     calculate(userLat, userLon, lat, lon, userAlt, alt) {
+        //calculating distance between latitudes
         let dLat = (userLat - lat) * -1
         let latDistance = 0.62137 * (Math.abs(dLat) * 110.574)
 
+        //calculating distance between longitudes
         let dLon = (userLon - lon) * -1
         let lonDistance = 0.62137 * (Math.abs(dLon) * (111.320 * Math.cos(lat * (Math.PI / 180))))
 
+        //calculating distance
         let distance = Math.sqrt(latDistance ** 2 + lonDistance ** 2)
 
-        //meters
+        //calculating difference in altitude
         let dAlt = (alt - userAlt) * 0.0003048
 
         return [lonDistance, latDistance, dAlt]
@@ -37,6 +42,7 @@ class Aircrafts {
     refreshList() {
         let timeNow = Date.now()
 
+        //checking for aircraft that havnt been updated in over 1min and removing them from memory
         for (let i in this.contactList) {
             if (timeNow - this.contactList[i].time > 60000) {
                 this.contactList.splice(i, 1)
@@ -46,6 +52,7 @@ class Aircrafts {
 }
 
 class Contact {
+    //string used to decode callsigns
     #charDecode = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ#####_###############0123456789######"
     constructor(downlinkFormat, xpdrCapability, icao) {
         this.downlinkFormat = downlinkFormat
@@ -56,6 +63,7 @@ class Contact {
     updateInfo(tc, buffer, bin) {
         this.time = Date.now()
         if (tc >= 1 && tc <= 4) {
+            //decoding emmitter class
             this.ec = parseInt(buffer.substring(0, 3), 2)
             if (this.ec == 0) this.ec = "No Info"
             else if (this.ec == 1) this.ec = "Light"
@@ -66,6 +74,7 @@ class Contact {
             else if (this.ec == 6) this.ec = "High Performance"
             else if (this.ec == 7) this.ec = "Rotorcraft"
 
+            //decoding callsign
             let c1 = this.#charDecode[parseInt(buffer.substring(3, 9), 2)]
             let c2 = this.#charDecode[parseInt(buffer.substring(9, 15), 2)]
             let c3 = this.#charDecode[parseInt(buffer.substring(15, 21), 2)]
@@ -76,16 +85,18 @@ class Contact {
             let c8 = this.#charDecode[parseInt(buffer.substring(45, 51), 2)]
             this.callsign = (c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8).replace(/_/g, "")
         } else if (tc >= 9 && tc <= 18) {
+            //decoding survalance status
             this.ss = parseInt(bin.substring(37, 39), 2)
             if (this.ss == 0) this.ss = "No Condition"
             else if (this.ss == 1) this.ss = "Permanent Alert"
             else if (this.ss == 2) this.ss = "Temporary Alert"
             else if (this.ss == 3) this.ss = "SPI Condition"
 
-            //single antenna t/f
+            //decoding single antenna t/f
             if (bin[39] == "0") this.NICsb = "No"
             else this.NICsb = "Yes"
 
+            //decoding altitude
             this.alt = bin.substring(40, 52)
             let qBit = this.alt[7]
             this.alt = this.alt.substring(0, 7) + this.alt.substring(8)
@@ -96,6 +107,7 @@ class Contact {
                 this.alt = parseInt(this.alt, 2) * 25 - 1000
             }
 
+            //decoding position
             if (bin[53] == "1") {
                 this.latCprOdd = parseInt(bin.substring(54, 71), 2) / 131072.0
                 this.lonCprOdd = parseInt(bin.substring(71, 88), 2) / 131072.0
@@ -139,6 +151,7 @@ class Contact {
         } else if (tc == 19) {
             this.st = parseInt(bin.substring(37, 40), 2)
             if (this.st == 1 || this.st == 2) {
+                //decoding velocity for special case transmittion types
                 this.nac = parseInt(bin.substring(42, 45), 2)
 
                 let sEW = parseInt(bin[45], 2)
@@ -159,30 +172,37 @@ class Contact {
                     vSN = vSN - 1
                 }
 
+                //decoding groundspeed
                 this.Gspd = Math.sqrt((vWE ** 2) + (vSN ** 2))
+                //decoding heading
                 this.hdg = Math.atan(vWE / vSN) * 360 / (2 * Math.PI)
                 if (vWE < 0 && vSN < 0) {
                     this.hdg += 180
                 } else if (vWE > 0 && vSN < 0) this.hdg = 180 - this.hdg
                 if (this.hdg < 0) this.hdg += 360
 
+                //decoding vertical rate
                 let svr = parseInt(bin[68], 2)
 
                 this.vr = (parseInt(bin.substring(69, 78), 2) - 1) * 64
                 if (svr == 1) this.vr *= -1
 
+                //decoding vertical rate source
                 this.vrSrc = parseInt(bin[67], 2)
                 if (this.vrSrc == 0) this.vrSrc = "Baro-pressure altitude change rate"
                 else if (this.vrSrc == 1) this.vrSrc = "Geometric altitude change rate"
             } else if (this.st == 3 || this.st == 4) {
                 this.nac = parseInt(bin.substring(42, 45), 2)
 
+                //decoding heading for special case transmission code
                 let hs = parseInt(bin[45], 2)
                 if (hs == 0) {
                     this.hdg = "Unavailable"
                 } else {
                     this.hdg = parseInt(bin.substring(46, 56), 2) / 1024 * 360
                 }
+
+                //decoding airspeed
                 let ast = parseInt(bin[56], 2)
                 if (ast == 0) {
                     this.ias = parseInt(bin.substring(57, 67), 2)
@@ -190,11 +210,13 @@ class Contact {
                     this.tas = parseInt(bin.substring(57, 67), 2)
                 }
 
+                //decoding vertical rate
                 let svr = parseInt(bin[68], 2)
 
                 this.vr = (parseInt(bin.substring(69, 78), 2) - 1) * 64
                 if (svr == 1) this.vr *= -1
 
+                //decoding vertical rate source
                 this.vrSrc = parseInt(bin[67], 2)
                 if (this.vrSrc == 0) this.vrSrc = "Baro-pressure altitude change rate"
                 else if (this.vrSrc == 1) this.vrSrc = "Geometric altitude change rate"
@@ -202,12 +224,14 @@ class Contact {
         }
     }
     getInfo() {
+        //getting a/c information using hex database api
         return fetch(`https://hexdb.io/api/v1/aircraft/${this.icao}`,
             { method: 'GET' }
         )
             .catch(() => {return "none"})
             .then(response => response.text())
             .then(data => {
+                //parsing and adding new data to the return object
                 data = JSON.parse(data)
                 this.manufacturer = data["Manufacturer"]
                 this.operatorFlagCode = data["OperatorFlagCode"]
@@ -316,12 +340,15 @@ class Decoder {
 
     decode(buffer) {
         for (let i in buffer) {
+            //checking if buffer is in correct format if not ignoring it
             if (buffer.length < 1) continue
             let bin = this.#hex2bin(buffer[i])
             let downlinkFormat = parseInt(bin.substring(0, 5), 2)
             if (downlinkFormat != 17) continue
 
+            //decoding downlink format
             downlinkFormat = "ADS-B"
+            //decoding transponder capability
             let xpdrCapability = parseInt(bin.substring(5, 8), 2)
             if (xpdrCapability == 0) xpdrCapability = "(lvl 1)"
             else if (xpdrCapability == 4) xpdrCapability = "on-ground (lvl 2+)"
@@ -329,9 +356,12 @@ class Decoder {
             else if (xpdrCapability == 6) xpdrCapability = "on-ground or airborn (lvl 2+)"
             else if (xpdrCapability == 7) xpdrCapability = "on-ground or airborn (?)"
 
+            //decoding icao hex
             let icao = parseInt(bin.substring(8, 32), 2).toString(16)
+            //decoing message transmission code
             let meTC = parseInt(bin.substring(32, 37), 2)
             let me = bin.substring(37, 88)
+            //checking if it should add new aircraft to memory or update it
             let found = false
             for (i in aircraftManager.contactList) {
                 if (aircraftManager.contactList[i].icao == icao) {
@@ -350,6 +380,7 @@ class Server {
     async getBestMatch(lat, lon, alt, el, az) {
         let aircraftInRange = []
         let elAzDistanceCalculator = new ElAzCalc()
+        //looping through list of contacts and calculating each ones angle of elevation and azimuth angle
         for (let i in aircraftManager.contactList) {
             let elAzDistance = elAzDistanceCalculator.calculate(lat, lon, aircraftManager.contactList[i].lat, aircraftManager.contactList[i].lon, alt, aircraftManager.contactList[i].alt)
             aircraftInRange.push([aircraftManager.contactList[i], elAzDistance])
@@ -357,15 +388,21 @@ class Server {
         let bestMatch = [null, null, Number.MAX_SAFE_INTEGER]
         let allScores = []
 
+        //converting degrees to radians
         let elRads = el * (Math.PI / 180)
         let azRads = az * (Math.PI / 180)
+        //calculating 3d vector for phones direction
         let cameraVector = [Math.cos(elRads) * Math.sin(-azRads), Math.cos(elRads) * Math.cos(-azRads), Math.sin(elRads)]
+        //looping through all a/c in range
         for (let i in aircraftInRange) {
+            //setting 3d vector for each aircraft
             let planeVector = aircraftInRange[i][1]
 
+            //calculating dot product and magnitude of a/c vector
             let dotProduct = cameraVector[0] * planeVector[0] + cameraVector[1] * planeVector[1] + cameraVector[2] * planeVector[2]
             let planeVectorMag = Math.sqrt(planeVector[0] ** 2 + planeVector[1] ** 2 + planeVector[2] ** 2)
 
+            //ignoring a/c out of range
             if (planeVectorMag > 20000) {
                 let score = 500
                 if (score < bestMatch[2] && score < max_acceptable_angle) {
@@ -376,13 +413,16 @@ class Server {
                 continue
             }
 
+            //calculating angle of deviance between vectors
             let score = Math.abs(Math.acos(dotProduct / planeVectorMag)) * (180 / Math.PI)
+            //getting lowest angle of deviance
             if (score < bestMatch[2] && score < max_acceptable_angle) {
                 aircraftInRange[i].push(score)
                 bestMatch = aircraftInRange[i]
                 allScores.push(aircraftInRange[i])
             }
         }
+        //sorting angle of divances for each a/c
         allScores.sort((a, b) => {
             if (a[2] < b[2]) {
                 return -1;
@@ -392,6 +432,7 @@ class Server {
             }
             return 0;
         })
+        //returning lowest angle of divance
         if (bestMatch[0]) {
             return await bestMatch[0].getInfo()
         } else {
@@ -400,11 +441,14 @@ class Server {
     }
     createServer(serverUrl) {
         let that = this
+        //creating http server for api
         this.server = http.createServer(function (req, res) {
             const { method, url } = req;
             let surl = new URL(url, serverUrl);
 
+            //adding /scan end point
             if (method == 'GET' && surl.pathname == '/scan') {
+                //getting query params
                 let params = surl.searchParams
                 let lat = params.get("lat")
                 let lon = params.get("lon")
@@ -413,6 +457,7 @@ class Server {
                 let el = params.get("el")
                 let az = params.get("az")
 
+                //returning results
                 return that.getBestMatch(lat, lon, alt, el, az)
                     .then(bestMatch => {
                         res.write(JSON.stringify(bestMatch))
@@ -428,15 +473,20 @@ class Server {
 let decoder = new Decoder()
 
 client.on('data', function (data) {
+    //refrehing list when ever server gets new data from ads-b radio
     aircraftManager.refreshList()
+    //converting buffer to a binary string
     let packets = data.toString().replace(/\n|\*/g, "").split(";")
+    //sending data to decoder
     decoder.decode(packets)
 })
 
+//creating and starting http server
 let server = new Server()
 server.createServer("http://10.0.0.211/")
 server.server.listen(80)
 
+//logging if websocket connection was closed
 client.on('close', function () {
     console.log('Connection closed');
 })
