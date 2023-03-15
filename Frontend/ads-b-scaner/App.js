@@ -10,9 +10,17 @@ import * as Location from 'expo-location'
 const width = Dimensions.get('window').width
 const height = Dimensions.get('window').height
 
+//{server}:{port}
+//(asuming http)
+const serverIP = "10.0.0.211:80"
+
+//ssl t/f
+const ssl = false
+
 export default function App() {
     //setting states
-    let cameraRef = useRef()
+    const sslS = ssl ? "s" : ""
+    const cameraRef = useRef()
     const [hasCameraPermission, setHasCameraPermission] = useState()
     const [location, setLocation] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
@@ -22,7 +30,6 @@ export default function App() {
     const [data, setData] = useState({})
     const [info, setInfo] = useState(null)
     const [isNoResults, setIsNoResults] = useState(false)
-
     const [displayingInfo, setDisplayingInfo] = useState(false)
 
     //getting location and camera permissions
@@ -109,7 +116,7 @@ export default function App() {
         let locArr = getLoc()
 
         //sending api request
-        fetch(`http://10.0.0.211:80/scan?lat=${locArr[0]}&lon=${locArr[1]}&${locArr[2]}&el=${el}&az=${az}`)
+        fetch(`http${sslS}://${serverIP}/scan?lat=${locArr[0]}&lon=${locArr[1]}&${locArr[2]}&el=${el}&az=${az}`)
             .then(res => res.json())
             .then(json => {
                 if (json == "none") {
