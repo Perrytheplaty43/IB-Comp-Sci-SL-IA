@@ -1,3 +1,4 @@
+//Importing dependancies
 import { StatusBar } from 'expo-status-bar'
 import { Camera, CameraType } from 'expo-camera';
 import React, { useState, useEffect, useRef } from 'react'
@@ -5,14 +6,12 @@ import { Button, StyleSheet, Text, TouchableOpacity, ScrollView, View, ActivityI
 import { DeviceMotion } from 'expo-sensors'
 import * as Location from 'expo-location'
 
+//getting user screen dimenstions
 const width = Dimensions.get('window').width
 const height = Dimensions.get('window').height
 
-const  gradientHeight=500;
-const gradientBackground  = 'purple';
-const data = Array.from({ length: gradientHeight });
-
 export default function App() {
+    //setting states
     let cameraRef = useRef()
     const [hasCameraPermission, setHasCameraPermission] = useState()
     const [location, setLocation] = useState(null)
@@ -26,6 +25,7 @@ export default function App() {
 
     const [displayingInfo, setDisplayingInfo] = useState(false)
 
+    //getting location and camera permissions
     useEffect(() => {
         _subscribe();
         (async () => {
@@ -49,10 +49,12 @@ export default function App() {
         }
     }, [])
 
+    //setting refresh rate from device sensors
     const _setInterval = () => {
         DeviceMotion.setUpdateInterval(77);
     };
 
+    //subscribing to device motion sensor's data
     const _subscribe = () => {
         //Adding the Listener
         DeviceMotion.addListener((devicemotionData) => {
@@ -67,6 +69,7 @@ export default function App() {
         DeviceMotion.removeAllListeners()
     }
 
+    //calculating angle of azimuth of device
     function getAz() {
         if (data) {
             return (data.alpha * (180 / Math.PI)) < 0 ? 180 + Math.abs((data.alpha * (180 / Math.PI))) : Math.abs(Math.abs((data.alpha * (180 / Math.PI))) - 180)
@@ -75,6 +78,7 @@ export default function App() {
         }
     }
 
+    //calculating angle of elevation of device
     function getEl() {
         if (data) {
             return 90 - (data.beta * (180 / Math.PI))
@@ -83,6 +87,7 @@ export default function App() {
         }
     }
 
+    //getting location of device and converting altitude of device form meters to feet
     function getLoc() {
         if (location) {
             if (location.latitude && location.longitude && location.altitude) {
@@ -97,11 +102,13 @@ export default function App() {
     }
 
     function getMatch() {
+        //getting device angles
         setIsLoading(true)
         let az = getAz()
         let el = getEl()
         let locArr = getLoc()
 
+        //sending api request
         fetch(`http://10.0.0.211:80/scan?lat=${locArr[0]}&lon=${locArr[1]}&${locArr[2]}&el=${el}&az=${az}`)
             .then(res => res.json())
             .then(json => {
@@ -120,6 +127,7 @@ export default function App() {
             })
     }
 
+    //restarting UI
     function scanAgain() {
         setDisplayingInfo(false)
         setToShow(false)
@@ -127,6 +135,7 @@ export default function App() {
         setIsNoResults(false)
     }
 
+    //UI JSX
     return (
         <ScrollView style={styles.scroll}>
             {isLoading &&
@@ -196,6 +205,7 @@ export default function App() {
         </ScrollView>
     )
 }
+//Styling for UI
 const styles = StyleSheet.create({
     scroll: {
         marginTop: 40,
