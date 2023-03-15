@@ -4,8 +4,13 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Button, StyleSheet, Text, TouchableOpacity, ScrollView, View, ActivityIndicator, Dimensions } from 'react-native'
 import { DeviceMotion } from 'expo-sensors'
 import * as Location from 'expo-location'
+
 const width = Dimensions.get('window').width
 const height = Dimensions.get('window').height
+
+const  gradientHeight=500;
+const gradientBackground  = 'purple';
+const data = Array.from({ length: gradientHeight });
 
 export default function App() {
     let cameraRef = useRef()
@@ -177,7 +182,7 @@ export default function App() {
                     </Text>
                 }
                 {!displayingInfo &&
-                    <TouchableOpacity onPress={getMatch} style={styles.button}>
+                    <TouchableOpacity activeOpacity={1} onPress={getMatch} style={styles.button}>
                         <Text style={styles.text}>Scan</Text>
                     </TouchableOpacity>
                 }
@@ -228,12 +233,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     textT: {
-        marginLeft: 30,
-        marginRight: 30,
-        marginBottom: 30,
+        paddingLeft: 30,
+        paddingRight: 30,
+        paddingBottom: 30,
         fontFamily: 'Roboto',
         fontWeight: 900,
         fontSize: 30,
+        backgroundColor: '#dbdbdb',
+        borderRadius: 30,
     },
     text: {
         fontFamily: 'Roboto',
