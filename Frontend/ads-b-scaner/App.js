@@ -142,7 +142,7 @@ export default function App() {
                 <ActivityIndicator size="large" style={styles.loading} color="white" borderColor="black" borderWidth={5} backgroundColor="transparent" />
             }
             {!toShowInfo &&
-                <Text style={styles.textT}>Point your mobile device at an aircraft to identify it and receive its information...</Text>
+                <Text style={styles.textT}>Point your device at an aircraft and scan it to identify...</Text>
             }
             {!displayingInfo &&
                 <Camera style={styles.camera}>
