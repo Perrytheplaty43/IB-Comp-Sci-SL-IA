@@ -464,6 +464,10 @@ class Server {
                         res.end()
                         return
                     })
+            } else {
+                res.write("Error: 404")
+                req.end()
+                return
             }
         })
     }
