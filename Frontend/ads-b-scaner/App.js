@@ -155,52 +155,118 @@ export default function App() {
                 <Camera style={styles.camera}>
                 </Camera>
             }
-            <View style={styles.container}>
+            {!displayingInfo &&
+                <TouchableOpacity onPress={getMatch} style={styles.button}>
+                    <Text style={styles.text}>Scan</Text>
+                </TouchableOpacity>
+            }
+            <ScrollView style={styles.scroll2}>
                 {isNoResults &&
                     <Text style={styles.info}>No Aircraft Detected</Text>
                 }
                 {toShow &&
-                    <Text style={styles.dataText}>
-                        <Text style={styles.info}>
-                            HEX: <Text style={styles.data}>{info["icao"]}</Text>{"\n"}
-                            Callsign: <Text style={styles.data}>{!info["callsign"] ? "N/A" : info["callsign"]}</Text>{"\n"}
-                            Type: <Text style={styles.data}>{!info["type"] ? "N/A" : info["type"]}</Text>{"\n"}
-                            Reg: <Text style={styles.data}>{!info["registration"] ? "N/A" : info["registration"]}</Text>{"\n"}
-                        </Text>
-                        {"\n"}
-                        <Text style={styles.info2}>
-                            Altitude: <Text style={styles.data2}>{info["altitude"]} ft</Text>{"\n"}
-                            Groundspeed: <Text style={styles.data2}>{Math.round(info["ground speed"])} kts</Text>{"\n"}
-                        </Text>
-                        {"\n"}
-                        <Text style={styles.info3}>
-                            Lat, Lon: <Text style={styles.data3}>{info["latitude"].toFixed(3)}°, {info["longitude"].toFixed(3)}°</Text>{"\n"}
-                            Heading: <Text style={styles.data3}>{Math.round(info["heading"])}°</Text>{"\n"}
-                            Vertical Rate: <Text style={styles.data3}>{info["vertical rate"]} ft/m</Text>{"\n"}
-                            Emitter Category: <Text style={styles.data3}>{info["emitter category"]}</Text>{"\n"}
-                            Manufacturer: <Text style={styles.data3}>{!info["manufacturer"] ? "N/A" : info["manufacturer"]}</Text>{"\n"}
-                            Owners: <Text style={styles.data3}>{!info["registered owners"] ? "N/A" : info["registered owners"]}</Text>{"\n"}
-                        </Text>
-                        {"\n"}
-                        <Text style={styles.info4}>
-                            Downlink Format: <Text style={styles.data4}>{info["downlink format"]}</Text>{"\n"}
-                            Transponder Capability: <Text style={styles.data4}>{info["transponder capability"]}</Text>{"\n"}
-                            Time: <Text style={styles.data4}>{new Date(info["time"]).toString()}</Text>{"\n"}
-                            Surveillance Status: <Text style={styles.data4}>{info["surveillance status"]}</Text>{"\n"}
-                            Single Antenna: <Text style={styles.data4}>{info["single antenna"]}</Text>{"\n"}
-                            Subtype: <Text style={styles.data4}>{info["subtype"]}</Text>{"\n"}
-                            Velocity Uncertanty: <Text style={styles.data4}>{info["velocity uncertanty"]}</Text>{"\n"}
-                            Vertical Rate Source: <Text style={styles.data4}>{info["vertical rate source"]}</Text>{"\n"}
-                            IAS: <Text style={styles.data4}>{!info["ias"] ? "N/A" : info["ias"] + " kts"}</Text>{"\n"}
-                            TAS: <Text style={styles.data4}>{!info["tas"] ? "N/A" : info["tas"] + " kts"}</Text>{"\n"}
-                            Operator Flag Code: <Text style={styles.data4}>{!info["registered owners"] ? "N/A" : info["registered owners"]}</Text>{"\n"}
-                        </Text>
-                    </Text>
-                }
-                {!displayingInfo &&
-                    <TouchableOpacity activeOpacity={1} onPress={getMatch} style={styles.button}>
-                        <Text style={styles.text}>Scan</Text>
-                    </TouchableOpacity>
+                    <View style={styles.dataText}>
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>HEX:</Text><Text style={styles.data}>{info["icao"].toUpperCase()}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>Callsign:{"\n"} <Text style={styles.data}>{!info["callsign"] ? "N/A" : info["callsign"]}</Text></Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>Type:{"\n"}<Text style={styles.data2}>{!info["type"] ? "N/A" : info["type"]}</Text></Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>Reg:{"\n"} <Text style={styles.data}>{!info["registration"] ? "N/A" : info["registration"]}</Text>{"\n"}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+
+                        {/* data2 */}
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>Altitude:{"\n"} <Text style={styles.data}>{info["altitude"]} ft</Text>{"\n"}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>Groundspeed:{"\n"} <Text style={styles.data}>{Math.round(info["ground speed"])} kts</Text>{"\n"}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+
+                        {/* data3 */}
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>Lat, Lon:{"\n"} <Text style={styles.data2}>{info["latitude"].toFixed(3)}°, {info["longitude"].toFixed(3)}°</Text>{"\n"}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>Heading:{"\n"} <Text style={styles.data}>{Math.round(info["heading"])}°</Text>{"\n"}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>Vertical Rate:{"\n"} <Text style={styles.data}>{info["vertical rate"]} ft/m</Text>{"\n"}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>Emitter Category:{"\n"} <Text style={styles.data}>{info["emitter category"]}</Text>{"\n"}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>Manufacturer:{"\n"} <Text style={styles.data}>{!info["manufacturer"] ? "N/A" : info["manufacturer"]}</Text>{"\n"}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>Owners:{"\n"} <Text style={styles.data2}>{!info["registered owners"] ? "N/A" : info["registered owners"]}</Text>{"\n"}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+
+                        {/* data4 */}
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>Downlink Format:{"\n"} <Text style={styles.data}>{info["downlink format"]}</Text>{"\n"}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>Transponder Capability:{"\n"} <Text style={styles.data2}>{info["transponder capability"]}</Text>{"\n"}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>Time:{"\n"} <Text style={styles.data2}>{new Date(info["time"]).toString()}</Text>{"\n"}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>Surveillance Status:{"\n"} <Text style={styles.data2}>{info["surveillance status"]}</Text>{"\n"}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>Single Antenna:{"\n"} <Text style={styles.data}>{info["single antenna"]}</Text>{"\n"}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>Subtype:{"\n"} <Text style={styles.data}>{info["subtype"]}</Text>{"\n"}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>Velocity Uncertanty:{"\n"} <Text style={styles.data}>{info["velocity uncertanty"]}</Text>{"\n"}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>Vertical Rate Source:{"\n"} <Text style={styles.data2}>{info["vertical rate source"]}</Text>{"\n"}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>IAS:{"\n"} <Text style={styles.data}>{!info["ias"] ? "N/A" : info["ias"] + " kts"}</Text>{"\n"}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>TAS:{"\n"} <Text style={styles.data}>{!info["tas"] ? "N/A" : info["tas"] + " kts"}</Text>{"\n"}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+                        <View style={styles.infoDiv}>
+                            <Text style={styles.info}>Operator Flag Code:{"\n"} <Text style={styles.data2}>{!info["registered owners"] ? "N/A" : info["registered owners"]}</Text>{"\n"}</Text>
+                        </View>
+                        <Text style={styles.sperator}>{"\n"}</Text>
+                    </View>
                 }
                 {displayingInfo &&
                     <TouchableOpacity onPress={scanAgain} style={styles.button}>
@@ -208,43 +274,46 @@ export default function App() {
                     </TouchableOpacity>
                 }
                 <StatusBar style="auto" />
-            </View>
+            </ScrollView>
         </ScrollView>
     )
 }
 //Styling for UI
 const styles = StyleSheet.create({
-    scroll: {
-        marginTop: 40,
-        flex: 1,
+    sperator: {
+        fontSize: 5
+    },
+    dataText: {
+        alignItems: 'center',
         display: 'flex',
+        justifyContent: 'center',
+    },
+    scroll: {
+        paddingTop: 40,
+        flex: 1,
+        flexGrow: 1,
+        display: 'flex',
+        backgroundColor: '#FAF6F8'
     },
     scroll2: {
         display: "flex",
         flexGrow: 1,
     },
-    dataText: {
-        position: 'absolute',
-        top: 20
-    },
     button: {
         justifyContent: 'center',
         alignItems: 'center',
-        position: 'absolute',
-        bottom: -15,
         width: width,
-        height: height * 0.2,
+        height: height * 0.22,
         padding: 10,
-        paddingBottom: 15,
-        zIndex: 100,
+        paddingBottom: 30,
         borderRadius: 30,
-        backgroundColor: '#dbdbdb',
+        backgroundColor: '#b3b3b3',
     },
     container: {
         paddingLeft: 30,
         paddingRight: 30,
         marginTop: 35,
-        paddingBottom: 90,
+        paddingBottom: 136,
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
@@ -256,8 +325,6 @@ const styles = StyleSheet.create({
         fontFamily: 'Roboto',
         fontWeight: 900,
         fontSize: 30,
-        backgroundColor: '#dbdbdb',
-        borderRadius: 30,
     },
     text: {
         fontFamily: 'Roboto',
@@ -269,10 +336,21 @@ const styles = StyleSheet.create({
         fontWeight: 900,
         fontSize: 20,
     },
+    infoDiv: {
+        backgroundColor: '#DBD8D8',
+        borderRadius: 15,
+        width: width - 20,
+        height: 150,
+        marginLeft: 100,
+        marginRight: 100,
+    },
     info: {
         fontFamily: 'Roboto',
         fontWeight: 900,
+        color: '#554C4E',
         fontSize: 35,
+        paddingLeft: 40,
+        paddingTop: 10
     },
     info2: {
         fontFamily: 'Roboto',
@@ -292,14 +370,16 @@ const styles = StyleSheet.create({
     data: {
         fontFamily: 'Roboto',
         fontWeight: 900,
-        fontSize: 35,
-        color: '#858585'
+        fontSize: 65,
+        color: '#F4717F',
+        textAlign: 'center',
     },
     data2: {
         fontFamily: 'Roboto',
         fontWeight: 900,
-        fontSize: 30,
-        color: '#858585'
+        fontSize: 40,
+        color: '#F4717F',
+        textAlign: 'center',
     },
     data3: {
         fontFamily: 'Roboto',
