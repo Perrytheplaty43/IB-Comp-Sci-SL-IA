@@ -281,8 +281,14 @@ class Contact {
                 this.reg = data["Registration"]
                 this.type = data["Type"]
 
-                return getPhotoByQueryJP(reg)
-                    .then(query => query.url)
+                return getPhotoByQueryJP(this.reg)
+                    .then(query => {
+                        if (query) {
+                            return query.url
+                        } else {
+                            return "none"
+                        }
+                    })
                     .then(queryURL => {
                         return {
                             "downlink format": this.downlinkFormat,

@@ -2,7 +2,7 @@
 import { StatusBar } from 'expo-status-bar'
 import { Camera, CameraType } from 'expo-camera';
 import React, { useState, useEffect, useRef } from 'react'
-import { Button, StyleSheet, Text, TouchableOpacity, ScrollView, View, ActivityIndicator, Dimensions } from 'react-native'
+import { Button, StyleSheet, Text, TouchableOpacity, ScrollView, View, ActivityIndicator, Dimensions, Image, Animated, TouchableHighlight } from 'react-native'
 import { DeviceMotion } from 'expo-sensors'
 import * as Location from 'expo-location'
 
@@ -17,11 +17,16 @@ const serverIP = "10.0.0.211:80"
 //ssl t/f
 const ssl = false
 
+let infoG
+
+let animatedValue = new Animated.Value(0)
+
 export default function App() {
     //setting states
     const sslS = ssl ? "s" : ""
     const cameraRef = useRef()
     const [hasCameraPermission, setHasCameraPermission] = useState()
+    const [toShow2, setToShow2] = useState(false)
     const [location, setLocation] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
     const [toShowInfo, setToShowInfo] = useState(false)
@@ -31,6 +36,8 @@ export default function App() {
     const [info, setInfo] = useState(null)
     const [isNoResults, setIsNoResults] = useState(false)
     const [displayingInfo, setDisplayingInfo] = useState(false)
+
+    const fadeAnim = useRef(new Animated.Value(0)).current
 
     //getting location and camera permissions
     useEffect(() => {
@@ -124,12 +131,13 @@ export default function App() {
                     setToShowInfo(true)
                     setIsLoading(false)
                     setDisplayingInfo(true)
+                    loadingColor = '#554C4E'
                     return
                 }
                 setInfo(json)
+                infoG = json
                 setToShow(true)
                 setToShowInfo(true)
-                setIsLoading(false)
                 setDisplayingInfo(true)
             })
     }
@@ -140,13 +148,29 @@ export default function App() {
         setToShow(false)
         setToShowInfo(false)
         setIsNoResults(false)
+        setToShow2(false)
+        fadeAnim.setValue(0)
+    }
+
+    function showAllInfo() {
+        setToShow(false)
+        setToShow2(true)
+        Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+        }).start();
+    }
+
+    function imagesOnLoad() {
+        setIsLoading(false)
     }
 
     //UI JSX
     return (
         <ScrollView style={styles.scroll}>
             {isLoading &&
-                <ActivityIndicator size="large" style={styles.loading} color="white" borderColor="black" borderWidth={5} backgroundColor="transparent" />
+                <ActivityIndicator size="large" style={styles.loading} color='#F4717F' backgroundColor="transparent" />
             }
             {!toShowInfo &&
                 <Text style={styles.textT}>Point your device at an aircraft and scan it to identify...</Text>
@@ -167,109 +191,73 @@ export default function App() {
                 {toShow &&
                     <View style={styles.dataText}>
                         <View style={styles.infoDiv}>
-                            <Text style={styles.info}>HEX:</Text><Text style={styles.data}>{info["icao"].toUpperCase()}</Text>
+                            <Text style={styles.infoB}>AIRCRAFT DETAILS</Text>
+                            <Text style={styles.dataB}>{!info["registration"] ? "" : info["registration"]}</Text>
+                            <Text style={styles.infoS}>{info["image"] != "none" ? "Tap aircraft to see more information..." : "Tap to see more information"}</Text>
                         </View>
-                        <Text style={styles.sperator}>{"\n"}</Text>
+                        {info["image"] != "none" &&
+                            <TouchableHighlight onPress={showAllInfo}>
+                                <Image style={styles.image} source={{ uri: info["image"] }} onLoad={imagesOnLoad}></Image>
+                            </TouchableHighlight>
+                        }
+                    </View>
+                }
+                {toShow2 &&
+                    <Animated.View style={{
+                        alignItems: 'center',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        marginBottom: 20,
+                        transform: [{ scaleX: fadeAnim }, { scaleY: fadeAnim }]
+                    }}>
                         <View style={styles.infoDiv}>
-                            <Text style={styles.info}>Callsign:{"\n"} <Text style={styles.data}>{!info["callsign"] ? "N/A" : info["callsign"]}</Text></Text>
+                            <Text style={styles.info}>HEX: <Text style={styles.data}>{info["icao"].toUpperCase()}</Text></Text>
+                            <Text style={styles.info}>Callsign: <Text style={styles.data}>{!info["callsign"] ? "N/A" : info["callsign"]}</Text></Text>
+                            <Text style={styles.info}>Type: <Text style={styles.data}>{!info["type"] ? "N/A" : info["type"]}</Text></Text>
+                            <Text style={styles.info}>Reg: <Text style={styles.data}>{!info["registration"] ? "N/A" : info["registration"]}</Text></Text>
                         </View>
                         <Text style={styles.sperator}>{"\n"}</Text>
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>Type:{"\n"}<Text style={styles.data2}>{!info["type"] ? "N/A" : info["type"]}</Text></Text>
-                        </View>
-                        <Text style={styles.sperator}>{"\n"}</Text>
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>Reg:{"\n"} <Text style={styles.data}>{!info["registration"] ? "N/A" : info["registration"]}</Text>{"\n"}</Text>
-                        </View>
-                        <Text style={styles.sperator}>{"\n"}</Text>
-
                         {/* data2 */}
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>Altitude:{"\n"} <Text style={styles.data}>{info["altitude"]} ft</Text>{"\n"}</Text>
-                        </View>
-                        <Text style={styles.sperator}>{"\n"}</Text>
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>Groundspeed:{"\n"} <Text style={styles.data}>{Math.round(info["ground speed"])} kts</Text>{"\n"}</Text>
+                        <View style={styles.infoDiv2}>
+                            <Text style={styles.info2}>Altitude: <Text style={styles.data}>{info["altitude"]} ft</Text></Text>
+                            <Text style={styles.info2}>Groundspeed: <Text style={styles.data}>{Math.round(info["ground speed"])} kts</Text></Text>
                         </View>
                         <Text style={styles.sperator}>{"\n"}</Text>
 
                         {/* data3 */}
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>Lat, Lon:{"\n"} <Text style={styles.data2}>{info["latitude"].toFixed(3)}°, {info["longitude"].toFixed(3)}°</Text>{"\n"}</Text>
-                        </View>
-                        <Text style={styles.sperator}>{"\n"}</Text>
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>Heading:{"\n"} <Text style={styles.data}>{Math.round(info["heading"])}°</Text>{"\n"}</Text>
-                        </View>
-                        <Text style={styles.sperator}>{"\n"}</Text>
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>Vertical Rate:{"\n"} <Text style={styles.data}>{info["vertical rate"]} ft/m</Text>{"\n"}</Text>
-                        </View>
-                        <Text style={styles.sperator}>{"\n"}</Text>
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>Emitter Category:{"\n"} <Text style={styles.data}>{info["emitter category"]}</Text>{"\n"}</Text>
-                        </View>
-                        <Text style={styles.sperator}>{"\n"}</Text>
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>Manufacturer:{"\n"} <Text style={styles.data}>{!info["manufacturer"] ? "N/A" : info["manufacturer"]}</Text>{"\n"}</Text>
-                        </View>
-                        <Text style={styles.sperator}>{"\n"}</Text>
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>Owners:{"\n"} <Text style={styles.data2}>{!info["registered owners"] ? "N/A" : info["registered owners"]}</Text>{"\n"}</Text>
+                        <View style={styles.infoDiv3}>
+                            <Text style={styles.info2}>Lat, Lon: <Text style={styles.data2}>{info["latitude"].toFixed(3)}°, {info["longitude"].toFixed(3)}°</Text></Text>
+                            <Text style={styles.info2}>Heading: <Text style={styles.data2}>{Math.round(info["heading"])}°</Text></Text>
+                            <Text style={styles.info2}>Vertical Rate: <Text style={styles.data2}>{info["vertical rate"]} ft/m</Text></Text>
+                            <Text style={styles.info2}>Emitter Category: <Text style={styles.data2}>{info["emitter category"]}</Text></Text>
+                            <Text style={styles.info2}>Manufacturer: <Text style={styles.data2}>{!info["manufacturer"] ? "N/A" : info["manufacturer"]}</Text></Text>
+                            <Text style={styles.info2}>Owners: <Text style={styles.data2}>{!info["registered owners"] ? "N/A" : info["registered owners"]}</Text></Text>
                         </View>
                         <Text style={styles.sperator}>{"\n"}</Text>
 
                         {/* data4 */}
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>Downlink Format:{"\n"} <Text style={styles.data}>{info["downlink format"]}</Text>{"\n"}</Text>
+                        <View style={styles.infoDiv4}>
+                            <Text style={styles.info3}>Downlink Format: <Text style={styles.data3}>{info["downlink format"]}</Text></Text>
+                            <Text style={styles.info3}>Transponder Capability: <Text style={styles.data3}>{info["transponder capability"]}</Text></Text>
+                            <Text style={styles.info3}>Time: <Text style={styles.data3}>{new Date(info["time"]).toString()}</Text></Text>
+                            <Text style={styles.info3}>Surveillance Status: <Text style={styles.data3}>{info["surveillance status"]}</Text></Text>
+                            <Text style={styles.info3}>Single Antenna: <Text style={styles.data3}>{info["single antenna"]}</Text></Text>
+                            <Text style={styles.info3}>Subtype: <Text style={styles.data3}>{info["subtype"]}</Text></Text>
+                            <Text style={styles.info3}>Velocity Uncertanty: <Text style={styles.data3}>{info["velocity uncertanty"]}</Text></Text>
+                            <Text style={styles.info3}>Vertical Rate Source: <Text style={styles.data3}>{info["vertical rate source"]}</Text></Text>
+                            <Text style={styles.info3}>IAS: <Text style={styles.data3}>{!info["ias"] ? "N/A" : info["ias"] + " kts"}</Text></Text>
+                            <Text style={styles.info3}>TAS: <Text style={styles.data3}>{!info["tas"] ? "N/A" : info["tas"] + " kts"}</Text></Text>
+                            <Text style={styles.info3}>Operator Flag Code: <Text style={styles.data3}>{!info["registered owners"] ? "N/A" : info["registered owners"]}</Text></Text>
                         </View>
-                        <Text style={styles.sperator}>{"\n"}</Text>
-
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>Transponder Capability:{"\n"} <Text style={styles.data2}>{info["transponder capability"]}</Text>{"\n"}</Text>
-                        </View>
-                        <Text style={styles.sperator}>{"\n"}</Text>
-
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>Time:{"\n"} <Text style={styles.data2}>{new Date(info["time"]).toString()}</Text>{"\n"}</Text>
-                        </View>
-                        <Text style={styles.sperator}>{"\n"}</Text>
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>Surveillance Status:{"\n"} <Text style={styles.data2}>{info["surveillance status"]}</Text>{"\n"}</Text>
-                        </View>
-                        <Text style={styles.sperator}>{"\n"}</Text>
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>Single Antenna:{"\n"} <Text style={styles.data}>{info["single antenna"]}</Text>{"\n"}</Text>
-                        </View>
-                        <Text style={styles.sperator}>{"\n"}</Text>
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>Subtype:{"\n"} <Text style={styles.data}>{info["subtype"]}</Text>{"\n"}</Text>
-                        </View>
-                        <Text style={styles.sperator}>{"\n"}</Text>
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>Velocity Uncertanty:{"\n"} <Text style={styles.data}>{info["velocity uncertanty"]}</Text>{"\n"}</Text>
-                        </View>
-                        <Text style={styles.sperator}>{"\n"}</Text>
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>Vertical Rate Source:{"\n"} <Text style={styles.data2}>{info["vertical rate source"]}</Text>{"\n"}</Text>
-                        </View>
-                        <Text style={styles.sperator}>{"\n"}</Text>
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>IAS:{"\n"} <Text style={styles.data}>{!info["ias"] ? "N/A" : info["ias"] + " kts"}</Text>{"\n"}</Text>
-                        </View>
-                        <Text style={styles.sperator}>{"\n"}</Text>
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>TAS:{"\n"} <Text style={styles.data}>{!info["tas"] ? "N/A" : info["tas"] + " kts"}</Text>{"\n"}</Text>
-                        </View>
-                        <Text style={styles.sperator}>{"\n"}</Text>
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.info}>Operator Flag Code:{"\n"} <Text style={styles.data2}>{!info["registered owners"] ? "N/A" : info["registered owners"]}</Text>{"\n"}</Text>
-                        </View>
-                        <Text style={styles.sperator}>{"\n"}</Text>
-                    </View>
+                    </Animated.View>
                 }
-                {displayingInfo &&
-                    <TouchableOpacity onPress={scanAgain} style={styles.button}>
+                {(displayingInfo && !toShow2) &&
+                    <TouchableOpacity onPress={scanAgain} style={styles.buttonSA}>
+                        <Text style={styles.text2}>Scan Again</Text>
+                    </TouchableOpacity>
+                }
+                {(displayingInfo && toShow2) &&
+                    <TouchableOpacity onPress={scanAgain} style={styles.buttonSA2}>
                         <Text style={styles.text2}>Scan Again</Text>
                     </TouchableOpacity>
                 }
@@ -280,6 +268,13 @@ export default function App() {
 }
 //Styling for UI
 const styles = StyleSheet.create({
+    image: {
+        width: width,
+        overflow: 'hidden',
+        borderRadius: 30,
+        marginTop: 100,
+        aspectRatio: 16 / 9
+    },
     sperator: {
         fontSize: 5
     },
@@ -287,6 +282,27 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         display: 'flex',
         justifyContent: 'center',
+        marginBottom: 200
+    },
+    dataTextA: {
+        alignItems: 'center',
+        display: 'flex',
+        justifyContent: 'center',
+        marginBottom: 200,
+        transform: [
+            {
+                scaleX: animatedValue.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [1, 15]
+                })
+            },
+            {
+                scaleY: animatedValue.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [1, 12.5]
+                })
+            }
+        ]
     },
     scroll: {
         paddingTop: 40,
@@ -306,6 +322,27 @@ const styles = StyleSheet.create({
         height: height * 0.22,
         padding: 10,
         paddingBottom: 30,
+        borderRadius: 30,
+        backgroundColor: '#b3b3b3',
+    },
+    buttonSA: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: infoG ? (infoG["image"] != "none" ? "relative" : "absolute") : "relative",
+        bottom: 75,
+        width: width,
+        height: height * 0.22,
+        padding: 10,
+        paddingBottom: 30,
+        borderRadius: 30,
+        backgroundColor: '#b3b3b3',
+    },
+    buttonSA2: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: width,
+        height: height * 0.22,
+        marginBottom: 16,
         borderRadius: 30,
         backgroundColor: '#b3b3b3',
     },
@@ -340,11 +377,35 @@ const styles = StyleSheet.create({
         backgroundColor: '#DBD8D8',
         borderRadius: 15,
         width: width - 20,
-        height: 150,
+        height: 230,
         marginLeft: 100,
         marginRight: 100,
     },
-    info: {
+    infoDiv2: {
+        backgroundColor: '#DBD8D8',
+        borderRadius: 15,
+        width: width - 20,
+        height: 110,
+        marginLeft: 100,
+        marginRight: 100,
+    },
+    infoDiv3: {
+        backgroundColor: '#DBD8D8',
+        borderRadius: 15,
+        width: width - 20,
+        height: 310,
+        marginLeft: 100,
+        marginRight: 100,
+    },
+    infoDiv4: {
+        backgroundColor: '#DBD8D8',
+        borderRadius: 15,
+        width: width - 20,
+        height: 420,
+        marginLeft: 100,
+        marginRight: 100,
+    },
+    infoB: {
         fontFamily: 'Roboto',
         fontWeight: 900,
         color: '#554C4E',
@@ -352,15 +413,37 @@ const styles = StyleSheet.create({
         paddingLeft: 40,
         paddingTop: 10
     },
+    info: {
+        fontFamily: 'Roboto',
+        fontWeight: 900,
+        color: '#554C4E',
+        fontSize: 30,
+        paddingLeft: 40,
+        paddingTop: 10
+    },
+    infoS: {
+        fontFamily: 'Roboto',
+        fontWeight: 900,
+        color: '#554C4E',
+        fontSize: 25,
+        paddingLeft: 40,
+        paddingTop: 10
+    },
     info2: {
         fontFamily: 'Roboto',
         fontWeight: 900,
-        fontSize: 30,
+        color: '#554C4E',
+        fontSize: 25,
+        paddingLeft: 40,
+        paddingTop: 10
     },
     info3: {
         fontFamily: 'Roboto',
         fontWeight: 900,
-        fontSize: 20,
+        color: '#554C4E',
+        fontSize: 18,
+        paddingLeft: 40,
+        paddingTop: 10
     },
     info4: {
         fontFamily: 'Roboto',
@@ -370,6 +453,13 @@ const styles = StyleSheet.create({
     data: {
         fontFamily: 'Roboto',
         fontWeight: 900,
+        fontSize: 30,
+        color: '#F4717F',
+        textAlign: 'center',
+    },
+    dataB: {
+        fontFamily: 'Roboto',
+        fontWeight: 900,
         fontSize: 65,
         color: '#F4717F',
         textAlign: 'center',
@@ -377,15 +467,16 @@ const styles = StyleSheet.create({
     data2: {
         fontFamily: 'Roboto',
         fontWeight: 900,
-        fontSize: 40,
+        fontSize: 25,
         color: '#F4717F',
         textAlign: 'center',
     },
     data3: {
         fontFamily: 'Roboto',
         fontWeight: 900,
-        fontSize: 20,
-        color: '#858585'
+        fontSize: 15,
+        color: '#F4717F',
+        textAlign: 'center',
     },
     data4: {
         fontFamily: 'Roboto',
