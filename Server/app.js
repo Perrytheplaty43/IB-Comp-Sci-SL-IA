@@ -3,7 +3,7 @@ let net = require('net');
 let http = require('http');
 
 //Setting tolerance constant
-const max_acceptable_angle = 27
+const max_acceptable_angle = 27000
 
 //connecting to ads-b raw data tcp socket
 let client = new net.Socket();
@@ -11,6 +11,48 @@ client.connect(30002, '10.0.0.78', function () {
     console.log('Connected');
     client.write('Hello, server! Love, Client.')
 })
+
+const axios = require("axios");
+const cheerio = require("cheerio");
+
+async function getPhotoByQueryJP(query) {
+    const url = `https://www.jetphotos.com/photo/keyword/${query}`;
+
+    const html = await axios.get(url);
+
+    if (!html) {
+        return null;
+    }
+
+    let $ = cheerio.load(html.data);
+
+    let imageContainers = $(".result__photoLink");
+
+    if (!imageContainers) {
+        return null;
+    }
+
+    let imageContainer = imageContainers[0];
+
+    if (!imageContainer) {
+        return null;
+    }
+
+    let image = imageContainer.children[1].attribs.src;
+
+    if (!image) {
+        return null;
+    }
+
+    let split = image.substr(2).split("/");
+
+    let id = split[split.length - 2] + "/" + split[split.length - 1];
+
+    return {
+        url: `https://cdn.jetphotos.com/full/${id}`,
+        cr: "JetPhotos",
+    };
+}
 
 class ElAzCalc {
     calculate(userLat, userLon, lat, lon, userAlt, alt) {
@@ -228,7 +270,7 @@ class Contact {
         return fetch(`https://hexdb.io/api/v1/aircraft/${this.icao}`,
             { method: 'GET' }
         )
-            .catch(() => {return "none"})
+            .catch(() => { return "none" })
             .then(response => response.text())
             .then(data => {
                 //parsing and adding new data to the return object
@@ -239,32 +281,37 @@ class Contact {
                 this.reg = data["Registration"]
                 this.type = data["Type"]
 
-                return {
-                    "downlink format": this.downlinkFormat,
-                    "transponder capability": this.xpdrCapability,
-                    "icao": this.icao,
-                    "time": this.time,
-                    "emitter category": this.ec,
-                    "callsign": this.callsign,
-                    "surveillance status": this.ss,
-                    "single antenna": this.NICsb,
-                    "altitude": this.alt,
-                    "latitude": this.lat,
-                    "longitude": this.lon,
-                    "subtype": this.st,
-                    "velocity uncertanty": this.nac,
-                    "ground speed": this.Gspd,
-                    "heading": this.hdg,
-                    "vertical rate": this.vr,
-                    "vertical rate source": this.vrSrc,
-                    "ias": this.ias,
-                    "tas": this.tas,
-                    "manufacturer": this.manufacturer,
-                    "operator flag code": this.operatorFlagCode,
-                    "registered owners": this.registeredOwners,
-                    "registration": this.reg,
-                    "type": this.type,
-                }
+                return getPhotoByQueryJP(reg)
+                    .then(query => query.url)
+                    .then(queryURL => {
+                        return {
+                            "downlink format": this.downlinkFormat,
+                            "transponder capability": this.xpdrCapability,
+                            "icao": this.icao,
+                            "time": this.time,
+                            "emitter category": this.ec,
+                            "callsign": this.callsign,
+                            "surveillance status": this.ss,
+                            "single antenna": this.NICsb,
+                            "altitude": this.alt,
+                            "latitude": this.lat,
+                            "longitude": this.lon,
+                            "subtype": this.st,
+                            "velocity uncertanty": this.nac,
+                            "ground speed": this.Gspd,
+                            "heading": this.hdg,
+                            "vertical rate": this.vr,
+                            "vertical rate source": this.vrSrc,
+                            "ias": this.ias,
+                            "tas": this.tas,
+                            "manufacturer": this.manufacturer,
+                            "operator flag code": this.operatorFlagCode,
+                            "registered owners": this.registeredOwners,
+                            "registration": this.reg,
+                            "type": this.type,
+                            "image": queryURL,
+                        }
+                    })
             })
     }
 }
