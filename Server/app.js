@@ -15,7 +15,16 @@ client.connect(30002, '10.0.0.78', function () {
 const axios = require("axios");
 const cheerio = require("cheerio");
 
+let cache = {}
+
 async function getPhotoByQueryJP(query) {
+    console.log(cache)
+    if (cache[query]) {
+        return {
+            url: cache[query],
+            cr: "JetPhotos",
+        }
+    }
     const url = `https://www.jetphotos.com/photo/keyword/${query}`;
 
     const html = await axios.get(url);
@@ -47,6 +56,8 @@ async function getPhotoByQueryJP(query) {
     let split = image.substr(2).split("/");
 
     let id = split[split.length - 2] + "/" + split[split.length - 1];
+
+    cache[query] = `https://cdn.jetphotos.com/full/${id}`
 
     return {
         url: `https://cdn.jetphotos.com/full/${id}`,

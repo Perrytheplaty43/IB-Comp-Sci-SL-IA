@@ -126,17 +126,16 @@ export default function App() {
         fetch(`http${sslS}://${serverIP}/scan?lat=${locArr[0]}&lon=${locArr[1]}&${locArr[2]}&el=${el}&az=${az}`)
             .then(res => res.json())
             .then(json => {
+                infoG = json
                 if (json == "none") {
                     setIsNoResults(true)
                     setToShowInfo(true)
                     setIsLoading(false)
                     setDisplayingInfo(true)
                     loadingColor = '#554C4E'
-                    infoG = json
                     setInfo(json)
                     return
                 }
-                infoG = json
                 setInfo(json)
                 setToShow(true)
                 setToShowInfo(true)
@@ -191,21 +190,20 @@ export default function App() {
                     <Text style={styles.text}>Scan</Text>
                 </TouchableOpacity>
             }
-            <ScrollView style={styles.scroll2}>     
-                {isNoResults &&
-                    <Text style={styles.info}>No Aircraft Detected</Text>
-                }
+            <ScrollView style={styles.scroll2}>
                 {toShow &&
                     <View style={styles.dataText}>
-                        <View style={styles.infoDiv}>
-                            <Text style={styles.infoB}>AIRCRAFT DETAILS</Text>
-                            <Text style={styles.dataB}>{!info["registration"] ? "" : info["registration"]}</Text>
-                            <Text style={styles.infoS}>{info["image"] != "none" ? "Tap aircraft to see more information..." : "Tap to see more information"}</Text>
-                        </View>
+                        <TouchableOpacity onPress={showAllInfo}>
+                            <View style={styles.infoDiv}>
+                                <Text style={styles.infoB}>AIRCRAFT DETAILS</Text>
+                                <Text style={styles.dataB}>{!info["registration"] ? "" : info["registration"]}</Text>
+                                <Text style={styles.infoS}>{info["image"] != "none" ? "Tap aircraft to see more information..." : "Tap to see more information"}</Text>
+                            </View>
+                        </TouchableOpacity >
                         {info["image"] != "none" &&
-                            <TouchableHighlight onPress={showAllInfo}>
+                            <TouchableOpacity  onPress={showAllInfo}>
                                 <Image style={styles.image} source={{ uri: info["image"] }} onLoad={imagesOnLoad}></Image>
-                            </TouchableHighlight>
+                            </TouchableOpacity >
                         }
                     </View>
                 }
@@ -258,8 +256,16 @@ export default function App() {
                         </View>
                     </Animated.View>
                 }
-                {(displayingInfo && !toShow2 && info != 'none') &&
+                {isNoResults &&
+                    <Text style={styles.info}>No Aircraft Detected</Text>
+                }
+                {(displayingInfo && !toShow2 && info != 'none' && info["image"] != 'none') &&
                     <TouchableOpacity onPress={scanAgain} style={styles.buttonSA}>
+                        <Text style={styles.text2}>Scan Again</Text>
+                    </TouchableOpacity>
+                }
+                {(displayingInfo && !toShow2 && info["image"] == 'none') &&
+                    <TouchableOpacity onPress={scanAgain} style={styles.buttonSA4}>
                         <Text style={styles.text2}>Scan Again</Text>
                     </TouchableOpacity>
                 }
@@ -359,12 +365,22 @@ const styles = StyleSheet.create({
     buttonSA3: {
         justifyContent: 'center',
         alignItems: 'center',
-        position: "absolute",
-        bottom: 40,
+        position: "relative",
         width: width,
         height: height * 0.15,
         borderRadius: 30,
         backgroundColor: '#DBD8D8',
+        marginTop: height - 170
+    },
+    buttonSA4: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: "relative",
+        width: width,
+        height: height * 0.15,
+        borderRadius: 30,
+        backgroundColor: '#DBD8D8',
+        marginTop: height - 550
     },
     container: {
         paddingLeft: 30,
