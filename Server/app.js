@@ -552,7 +552,7 @@ client.on('data', function (data) {
 //creating and starting http server
 let server = new Server()
 server.createServer("http://10.0.0.78/")
-server.server.listen(80)
+server.server.listen(81)
 
 //logging if websocket connection was closed
 client.on('close', function () {
