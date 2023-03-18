@@ -7,7 +7,7 @@ const max_acceptable_angle = 27
 
 //connecting to ads-b raw data tcp socket
 let client = new net.Socket();
-client.connect(30002, '10.0.0.78', function () {
+client.connect(30002, '10.0.47.54', function () {
     console.log('Connected');
     client.write('Hello, server! Love, Client.')
 })
