@@ -132,13 +132,18 @@ export default function App() {
                     setIsLoading(false)
                     setDisplayingInfo(true)
                     loadingColor = '#554C4E'
+                    infoG = json
+                    setInfo(json)
                     return
                 }
-                setInfo(json)
                 infoG = json
+                setInfo(json)
                 setToShow(true)
                 setToShowInfo(true)
                 setDisplayingInfo(true)
+                if (json["image"] == "none") {
+                    setIsLoading(false)
+                }
             })
     }
 
@@ -173,7 +178,9 @@ export default function App() {
                 <ActivityIndicator size="large" style={styles.loading} color='#F4717F' backgroundColor="transparent" />
             }
             {!toShowInfo &&
-                <Text style={styles.textT}>Point your device at an aircraft and scan it to identify...</Text>
+                <View style={styles.infoDiv5}>
+                    <Text style={styles.textT}>Point your device at an aircraft and scan it to identify it...</Text>
+                </View>
             }
             {!displayingInfo &&
                 <Camera style={styles.camera}>
@@ -184,7 +191,7 @@ export default function App() {
                     <Text style={styles.text}>Scan</Text>
                 </TouchableOpacity>
             }
-            <ScrollView style={styles.scroll2}>
+            <ScrollView style={styles.scroll2}>     
                 {isNoResults &&
                     <Text style={styles.info}>No Aircraft Detected</Text>
                 }
@@ -251,7 +258,7 @@ export default function App() {
                         </View>
                     </Animated.View>
                 }
-                {(displayingInfo && !toShow2) &&
+                {(displayingInfo && !toShow2 && info != 'none') &&
                     <TouchableOpacity onPress={scanAgain} style={styles.buttonSA}>
                         <Text style={styles.text2}>Scan Again</Text>
                     </TouchableOpacity>
@@ -262,6 +269,11 @@ export default function App() {
                     </TouchableOpacity>
                 }
                 <StatusBar style="auto" />
+                {(displayingInfo && !toShow2 && info == 'none') &&
+                    <TouchableOpacity onPress={scanAgain} style={styles.buttonSA3}>
+                        <Text style={styles.text2}>Scan Again</Text>
+                    </TouchableOpacity>
+                }
             </ScrollView>
         </ScrollView>
     )
@@ -323,28 +335,36 @@ const styles = StyleSheet.create({
         padding: 10,
         paddingBottom: 30,
         borderRadius: 30,
-        backgroundColor: '#b3b3b3',
+        backgroundColor: '#DBD8D8',
     },
     buttonSA: {
         justifyContent: 'center',
         alignItems: 'center',
         position: infoG ? (infoG["image"] != "none" ? "relative" : "absolute") : "relative",
-        bottom: 75,
+        bottom: 40,
         width: width,
-        height: height * 0.22,
-        padding: 10,
-        paddingBottom: 30,
+        height: height * 0.15,
         borderRadius: 30,
-        backgroundColor: '#b3b3b3',
+        backgroundColor: '#DBD8D8',
     },
     buttonSA2: {
         justifyContent: 'center',
         alignItems: 'center',
         width: width,
-        height: height * 0.22,
-        marginBottom: 16,
+        height: height * 0.15,
+        marginBottom: 35,
         borderRadius: 30,
-        backgroundColor: '#b3b3b3',
+        backgroundColor: '#DBD8D8',
+    },
+    buttonSA3: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: "absolute",
+        bottom: 40,
+        width: width,
+        height: height * 0.15,
+        borderRadius: 30,
+        backgroundColor: '#DBD8D8',
     },
     container: {
         paddingLeft: 30,
@@ -358,7 +378,6 @@ const styles = StyleSheet.create({
     textT: {
         paddingLeft: 30,
         paddingRight: 30,
-        paddingBottom: 30,
         fontFamily: 'Roboto',
         fontWeight: 900,
         fontSize: 30,
@@ -367,11 +386,13 @@ const styles = StyleSheet.create({
         fontFamily: 'Roboto',
         fontWeight: 900,
         fontSize: 30,
+        color: '#F4717F'
     },
     text2: {
         fontFamily: 'Roboto',
         fontWeight: 900,
-        fontSize: 20,
+        fontSize: 30,
+        color: '#F4717F'
     },
     infoDiv: {
         backgroundColor: '#DBD8D8',
@@ -404,6 +425,14 @@ const styles = StyleSheet.create({
         height: 420,
         marginLeft: 100,
         marginRight: 100,
+    },
+    infoDiv5: {
+        paddingTop: 10,
+        backgroundColor: '#DBD8D8',
+        borderRadius: 15,
+        width: width,
+        height: 130,
+        marginBottom: 10
     },
     infoB: {
         fontFamily: 'Roboto',

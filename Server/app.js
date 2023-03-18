@@ -3,7 +3,7 @@ let net = require('net');
 let http = require('http');
 
 //Setting tolerance constant
-const max_acceptable_angle = 27000
+const max_acceptable_angle = 27
 
 //connecting to ads-b raw data tcp socket
 let client = new net.Socket();
