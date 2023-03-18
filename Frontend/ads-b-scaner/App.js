@@ -12,7 +12,7 @@ const height = Dimensions.get('window').height
 
 //{server}:{port}
 //(asuming http)
-const serverIP = "10.0.0.211:80"
+const serverIP = "adsb-scanner.ddns.net"
 
 //ssl t/f
 const ssl = false
