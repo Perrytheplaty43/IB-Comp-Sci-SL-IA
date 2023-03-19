@@ -123,7 +123,8 @@ export default function App() {
         let locArr = getLoc()
 
         //sending api request
-        fetch(`http${sslS}://${serverIP}/scan?lat=${locArr[0]}&lon=${locArr[1]}&${locArr[2]}&el=${el}&az=${az}`)
+        console.log(el, az)
+        fetch(`http${sslS}://${serverIP}/scan?lat=${locArr[0]}&lon=${locArr[1]}&alt=${locArr[2]}&el=${el}&az=${az}`)
             .then(res => res.json())
             .then(json => {
                 infoG = json
