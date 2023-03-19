@@ -17,7 +17,7 @@ const serverIP = "73.169.132.52:81"
 //ssl t/f
 const ssl = false
 
-let infoG = "none"
+let infoG = {"image": "none"}
 
 let animatedValue = new Animated.Value(0)
 
@@ -33,7 +33,7 @@ export default function App() {
     const [toShow, setToShow] = useState(false)
     const [status, requestPermission] = Location.useForegroundPermissions()
     const [data, setData] = useState({})
-    const [info, setInfo] = useState(null)
+    const [info, setInfo] = useState({})
     const [isNoResults, setIsNoResults] = useState(false)
     const [displayingInfo, setDisplayingInfo] = useState(false)
 
