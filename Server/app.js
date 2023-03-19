@@ -69,11 +69,11 @@ class ElAzCalc {
     calculate(userLat, userLon, lat, lon, userAlt, alt) {
         //calculating distance between latitudes
         let dLat = (userLat - lat) * -1
-        let latDistance = 0.62137 * (Math.abs(dLat) * 110.574)
+        let latDistance = 0.62137 * (dLat * 110.574)
 
         //calculating distance between longitudes
         let dLon = (userLon - lon) * -1
-        let lonDistance = 0.62137 * (Math.abs(dLon) * (111.320 * Math.cos(lat * (Math.PI / 180))))
+        let lonDistance = 0.62137 * (dLon * (111.320 * Math.cos(lat * (Math.PI / 180))))
 
         //calculating distance
         let distance = Math.sqrt(latDistance ** 2 + lonDistance ** 2)
