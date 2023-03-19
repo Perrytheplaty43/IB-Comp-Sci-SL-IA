@@ -2,14 +2,14 @@
 import { StatusBar } from 'expo-status-bar'
 import { Camera, CameraType } from 'expo-camera';
 import React, { useState, useEffect, useRef } from 'react'
-import { Button, StyleSheet, Text, TouchableOpacity, ScrollView, View, ActivityIndicator, Dimensions, Image, Animated, TouchableHighlight } from 'react-native'
+import { Button, StyleSheet, Text, TouchableOpacity, ScrollView, View, ActivityIndicator, Dimensions, Image, Animated, TouchableHighlight, useWindowDimensions } from 'react-native'
 import { DeviceMotion } from 'expo-sensors'
 import * as Location from 'expo-location'
 
 //getting user screen dimenstions
 const width = Dimensions.get('window').width
 const height = Dimensions.get('window').height
-
+const fontScale = Dimensions.get('window').fontScale
 //{server}:{port}
 //(asuming http)
 const serverIP = "73.169.132.52:81"
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         width: width,
-        height: height * 0.22,
+        height: height * 0.22 * fontScale,
         padding: 10,
         paddingBottom: 30,
         borderRadius: 30,
@@ -349,7 +349,7 @@ const styles = StyleSheet.create({
         position: "relative",
         bottom: 0,
         width: width,
-        height: height * 0.15,
+        height: height * 0.15 * fontScale,
         borderRadius: 30,
         backgroundColor: '#DBD8D8',
     },
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         width: width,
-        height: height * 0.15,
+        height: height * 0.15 * fontScale,
         marginTop: 5,
         borderRadius: 30,
         backgroundColor: '#DBD8D8',
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         position: "relative",
         width: width,
-        height: height * 0.15,
+        height: height * 0.15 * fontScale,
         borderRadius: 30,
         backgroundColor: '#DBD8D8',
         marginTop: height - 170
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         position: "relative",
         width: width,
-        height: height * 0.15,
+        height: height * 0.15 * fontScale,
         borderRadius: 30,
         backgroundColor: '#DBD8D8',
         marginTop: height - 845
@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#DBD8D8',
         borderRadius: 15,
         width: width - 20,
-        height: 240,
+        height: 240 * fontScale,
         marginLeft: 100,
         marginRight: 100,
     },
@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#DBD8D8',
         borderRadius: 15,
         width: width - 20,
-        height: height - 140,
+        height: (height - 140) * fontScale,
         marginLeft: 100,
         marginRight: 100,
     },
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#DBD8D8',
         borderRadius: 15,
         width: width - 20,
-        height: 110,
+        height: 110 * fontScale,
         marginLeft: 100,
         marginRight: 100,
     },
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#DBD8D8',
         borderRadius: 15,
         width: width - 20,
-        height: 310,
+        height: 310 * fontScale,
         marginLeft: 100,
         marginRight: 100,
     },
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#DBD8D8',
         borderRadius: 15,
         width: width - 20,
-        height: 420,
+        height: 420 * fontScale,
         marginLeft: 100,
         marginRight: 100,
     },
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#DBD8D8',
         borderRadius: 15,
         width: width,
-        height: 130,
+        height: 130 * fontScale,
         marginBottom: 10
     },
     infoB: {
