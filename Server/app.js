@@ -460,7 +460,6 @@ class Server {
         if (azRads < 0) azRads += Math.PI * 2
         //calculating 3d vector for phones direction
         let cameraVector = [Math.cos(elRads) * Math.cos(azRads), Math.cos(elRads) * Math.sin(azRads), Math.sin(elRads)]
-        console.log(cameraVector)
         //looping through all a/c in range
         for (let i in aircraftInRange) {
             //setting 3d vector for each aircraft
