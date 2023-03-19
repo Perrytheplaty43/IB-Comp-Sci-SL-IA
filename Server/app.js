@@ -18,6 +18,7 @@ const cheerio = require("cheerio");
 let cache = {}
 
 async function getPhotoByQueryJP(query) {
+    console.clear()
     console.log(cache)
     if (cache[query]) {
         return {
@@ -498,7 +499,6 @@ class Server {
             }
             return 0;
         })
-        console.log(allScores)
         //returning lowest angle of divance
         if (allScores[0][0]) {
             return await allScores[0][0].getInfo()
