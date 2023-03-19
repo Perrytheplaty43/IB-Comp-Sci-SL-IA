@@ -463,6 +463,7 @@ class Server {
         for (let i in aircraftInRange) {
             //setting 3d vector for each aircraft
             let planeVector = aircraftInRange[i][1]
+            console.log(aircraftInRange[i][0]["icao"], planeVector)
 
             //calculating dot product and magnitude of a/c vector
             let dotProduct = cameraVector[0] * planeVector[0] + cameraVector[1] * planeVector[1] + cameraVector[2] * planeVector[2]
