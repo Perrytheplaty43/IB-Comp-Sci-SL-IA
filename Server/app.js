@@ -463,12 +463,11 @@ class Server {
         for (let i in aircraftInRange) {
             //setting 3d vector for each aircraft
             let planeVector = aircraftInRange[i][1]
-            console.log(aircraftInRange[i][0]["icao"], planeVector)
-
+            
             //calculating dot product and magnitude of a/c vector
             let dotProduct = cameraVector[0] * planeVector[0] + cameraVector[1] * planeVector[1] + cameraVector[2] * planeVector[2]
             let planeVectorMag = Math.sqrt(planeVector[0] ** 2 + planeVector[1] ** 2 + planeVector[2] ** 2)
-
+            
             //ignoring a/c out of range
             if (planeVectorMag > 20000) {
                 let score = 500
@@ -479,11 +478,11 @@ class Server {
                 }
                 continue
             }
-
+            
             //calculating angle of deviance between vectors
+            console.log(aircraftInRange[i][0]["callsign"], planeVector, score)
             let score = Math.abs(Math.acos(dotProduct / planeVectorMag)) * (180 / Math.PI)
             //getting lowest angle of deviance
-            console.log(aircraftInRange[i][0]["icao"], score)
             if (score < bestMatch[2] && score < max_acceptable_angle) {
                 aircraftInRange[i].push(score)
                 bestMatch = aircraftInRange[i]
