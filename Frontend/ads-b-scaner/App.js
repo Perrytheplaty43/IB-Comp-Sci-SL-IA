@@ -12,12 +12,12 @@ const height = Dimensions.get('window').height
 
 //{server}:{port}
 //(asuming http)
-const serverIP = "adsb-scanner.ddns.net"
+const serverIP = "73.169.132.52:81"
 
 //ssl t/f
 const ssl = false
 
-let infoG
+let infoG = "none"
 
 let animatedValue = new Animated.Value(0)
 
@@ -194,17 +194,15 @@ export default function App() {
                 {toShow &&
                     <View style={styles.dataText}>
                         <TouchableOpacity onPress={showAllInfo}>
-                            <View style={styles.infoDiv}>
+                            <View style={styles.infoDiv6}>
                                 <Text style={styles.infoB}>AIRCRAFT DETAILS</Text>
                                 <Text style={styles.dataB}>{!info["registration"] ? "" : info["registration"]}</Text>
-                                <Text style={styles.infoS}>{info["image"] != "none" ? "Tap aircraft to see more information..." : "Tap to see more information"}</Text>
+                                {info["image"] != "none" &&
+                                    <Image style={styles.image} source={{ uri: info["image"] }} onLoad={imagesOnLoad}></Image>
+                                }
+                                <Text style={styles.infoB}>{info["image"] != "none" ? "Tap aircraft to see more information..." : "Tap to see more information"}</Text>
                             </View>
                         </TouchableOpacity >
-                        {info["image"] != "none" &&
-                            <TouchableOpacity  onPress={showAllInfo}>
-                                <Image style={styles.image} source={{ uri: info["image"] }} onLoad={imagesOnLoad}></Image>
-                            </TouchableOpacity >
-                        }
                     </View>
                 }
                 {toShow2 &&
@@ -241,7 +239,7 @@ export default function App() {
                         <Text style={styles.sperator}>{"\n"}</Text>
 
                         {/* data4 */}
-                        <View style={styles.infoDiv4}>
+                        {/* <View style={styles.infoDiv4}>
                             <Text style={styles.info3}>Downlink Format: <Text style={styles.data3}>{info["downlink format"]}</Text></Text>
                             <Text style={styles.info3}>Transponder Capability: <Text style={styles.data3}>{info["transponder capability"]}</Text></Text>
                             <Text style={styles.info3}>Time: <Text style={styles.data3}>{new Date(info["time"]).toString()}</Text></Text>
@@ -253,7 +251,7 @@ export default function App() {
                             <Text style={styles.info3}>IAS: <Text style={styles.data3}>{!info["ias"] ? "N/A" : info["ias"] + " kts"}</Text></Text>
                             <Text style={styles.info3}>TAS: <Text style={styles.data3}>{!info["tas"] ? "N/A" : info["tas"] + " kts"}</Text></Text>
                             <Text style={styles.info3}>Operator Flag Code: <Text style={styles.data3}>{!info["registered owners"] ? "N/A" : info["registered owners"]}</Text></Text>
-                        </View>
+                        </View> */}
                     </Animated.View>
                 }
                 {isNoResults &&
@@ -287,10 +285,11 @@ export default function App() {
 //Styling for UI
 const styles = StyleSheet.create({
     image: {
-        width: width,
+        width: width - 20,
         overflow: 'hidden',
         borderRadius: 30,
         marginTop: 100,
+        marginBottom: 100,
         aspectRatio: 16 / 9
     },
     sperator: {
@@ -300,7 +299,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         display: 'flex',
         justifyContent: 'center',
-        marginBottom: 200
+        marginBottom: 20
     },
     dataTextA: {
         alignItems: 'center',
@@ -347,7 +346,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         position: infoG ? (infoG["image"] != "none" ? "relative" : "absolute") : "relative",
-        bottom: 40,
+        bottom: 0,
         width: width,
         height: height * 0.15,
         borderRadius: 30,
@@ -358,7 +357,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: width,
         height: height * 0.15,
-        marginBottom: 35,
+        marginTop: 5,
         borderRadius: 30,
         backgroundColor: '#DBD8D8',
     },
@@ -414,7 +413,15 @@ const styles = StyleSheet.create({
         backgroundColor: '#DBD8D8',
         borderRadius: 15,
         width: width - 20,
-        height: 230,
+        height: 240,
+        marginLeft: 100,
+        marginRight: 100,
+    },
+    infoDiv6: {
+        backgroundColor: '#DBD8D8',
+        borderRadius: 15,
+        width: width - 20,
+        height: height - 140,
         marginLeft: 100,
         marginRight: 100,
     },

@@ -528,10 +528,16 @@ class Server {
                         res.end()
                         return
                     })
-            } else {
-                res.write("Error: 404")
-                req.end()
-                return
+            }
+            if (method == 'GET' && surl.pathname == '/privacyPolicy') {
+                fs.readFile('./privacyPolicy.html', function (err, html) {
+                    if (err) {
+                        console.log(err)
+                    }
+                    res.writeHead(200, {'Content-Type': 'text/html'})
+                    res.write(html)
+                    res.end()
+                })
             }
         })
     }
