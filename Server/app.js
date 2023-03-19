@@ -464,11 +464,11 @@ class Server {
         for (let i in aircraftInRange) {
             //setting 3d vector for each aircraft
             let planeVector = aircraftInRange[i][1]
-            
+
             //calculating dot product and magnitude of a/c vector
             let dotProduct = cameraVector[0] * planeVector[0] + cameraVector[1] * planeVector[1] + cameraVector[2] * planeVector[2]
             let planeVectorMag = Math.sqrt(planeVector[0] ** 2 + planeVector[1] ** 2 + planeVector[2] ** 2)
-            
+
             //ignoring a/c out of range
             if (planeVectorMag > 20000) {
                 let score = 500
@@ -479,7 +479,7 @@ class Server {
                 }
                 continue
             }
-            
+
             //calculating angle of deviance between vectors
             let score = Math.abs(Math.acos(dotProduct / planeVectorMag)) * (180 / Math.PI)
             //getting lowest angle of deviance
@@ -500,8 +500,12 @@ class Server {
             return 0;
         })
         //returning lowest angle of divance
-        if (allScores[0][0]) {
-            return await allScores[0][0].getInfo()
+        if (allScores) {
+            if (allScores[0][0]) {
+                return await allScores[0][0].getInfo()
+            } else {
+                return "none"
+            }
         } else {
             return "none"
         }
@@ -537,7 +541,7 @@ class Server {
                     if (err) {
                         console.log(err)
                     }
-                    res.writeHead(200, {'Content-Type': 'text/html'})
+                    res.writeHead(200, { 'Content-Type': 'text/html' })
                     res.write(html)
                     res.end()
                 })
