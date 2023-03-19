@@ -508,7 +508,7 @@ class Server {
                 } else {
                     return "none"
                 }
-            } else { 
+            } else {
                 return "none"
             }
         } else {
