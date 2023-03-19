@@ -455,8 +455,8 @@ class Server {
         //converting degrees to radians
         let elRads = el * (Math.PI / 180)
         let azRads = -(az * (Math.PI / 180))
-        if (azRads < 0) azRads += Math.PI * 2
         azRads -= Math.PI / 2
+        if (azRads < 0) azRads += Math.PI * 2
         //calculating 3d vector for phones direction
         console.log(azRads * (180/Math.PI))
         let cameraVector = [Math.cos(elRads) * Math.cos(azRads), Math.cos(elRads) * Math.sin(azRads), Math.sin(elRads)]
