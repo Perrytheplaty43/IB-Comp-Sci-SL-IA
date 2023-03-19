@@ -196,7 +196,7 @@ export default function App() {
                         <TouchableOpacity onPress={showAllInfo}>
                             <View style={styles.infoDiv6}>
                                 <Text style={styles.infoB}>AIRCRAFT DETAILS</Text>
-                                <Text style={styles.dataB}>{!info["registration"] ? "" : info["registration"]}</Text>
+                                <Text style={styles.dataB}>{!info["registration"] ? (!info["callsign"] ? "Unknown" : info["callsign"]) : info["registration"]}</Text>
                                 {info["image"] != "none" &&
                                     <Image style={styles.image} source={{ uri: info["image"] }} onLoad={imagesOnLoad}></Image>
                                 }
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     buttonSA: {
         justifyContent: 'center',
         alignItems: 'center',
-        position: infoG ? (infoG["image"] != "none" ? "relative" : "absolute") : "relative",
+        position: "relative",
         bottom: 0,
         width: width,
         height: height * 0.15,
@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
         height: height * 0.15,
         borderRadius: 30,
         backgroundColor: '#DBD8D8',
-        marginTop: height - 550
+        marginTop: height - 845
     },
     container: {
         paddingLeft: 30,
