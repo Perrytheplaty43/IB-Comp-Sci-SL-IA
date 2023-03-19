@@ -457,7 +457,6 @@ class Server {
         let azRads = -(az * (Math.PI / 180))
         if (azRads < 0) azRads += Math.PI * 2
         azRads -= Math.PI / 2
-        if (azRads < 0) azRads += Math.PI * 2
         //calculating 3d vector for phones direction
         let cameraVector = [Math.cos(elRads) * Math.cos(azRads), Math.cos(elRads) * Math.sin(azRads), Math.sin(elRads)]
         //looping through all a/c in range
