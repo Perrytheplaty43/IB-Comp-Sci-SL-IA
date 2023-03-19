@@ -81,7 +81,7 @@ class ElAzCalc {
         //calculating difference in altitude
         let dAlt = (alt - userAlt) * 0.0003048
 
-        return [lonDistance, latDistance, dAlt]
+        return [lonDistance, latDistance, dAlt, distance]
     }
 }
 
@@ -490,10 +490,10 @@ class Server {
         }
         //sorting angle of divances for each a/c
         allScores.sort((a, b) => {
-            if (a[2] < b[2]) {
+            if (a[1][3] < b[1][3]) {
                 return -1;
             }
-            if (a[2] > b[2]) {
+            if (a[1][3] > b[1][3]) {
                 return 1;
             }
             return 0;
