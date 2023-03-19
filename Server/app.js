@@ -19,6 +19,7 @@ let cache = {}
 
 async function getPhotoByQueryJP(query) {
     console.clear()
+    console.log("Image Cache:")
     console.log(cache)
     if (cache[query]) {
         return {
