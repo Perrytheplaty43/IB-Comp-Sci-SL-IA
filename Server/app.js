@@ -458,7 +458,6 @@ class Server {
         azRads += Math.PI / 2
         if (azRads < 0) azRads += Math.PI * 2
         //calculating 3d vector for phones direction
-        console.log(azRads * (180/Math.PI))
         let cameraVector = [Math.cos(elRads) * Math.cos(azRads), Math.cos(elRads) * Math.sin(azRads), Math.sin(elRads)]
         //looping through all a/c in range
         for (let i in aircraftInRange) {
@@ -482,7 +481,6 @@ class Server {
             
             //calculating angle of deviance between vectors
             let score = Math.abs(Math.acos(dotProduct / planeVectorMag)) * (180 / Math.PI)
-            console.log(aircraftInRange[i][0]["callsign"], planeVector, score)
             //getting lowest angle of deviance
             if (score < bestMatch[2] && score < max_acceptable_angle) {
                 aircraftInRange[i].push(score)
@@ -500,6 +498,7 @@ class Server {
             }
             return 0;
         })
+        console.log(allScores)
         //returning lowest angle of divance
         if (bestMatch[0]) {
             return await bestMatch[0].getInfo()
