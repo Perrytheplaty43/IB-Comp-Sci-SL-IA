@@ -480,8 +480,8 @@ class Server {
             }
             
             //calculating angle of deviance between vectors
-            console.log(aircraftInRange[i][0]["callsign"], planeVector, score)
             let score = Math.abs(Math.acos(dotProduct / planeVectorMag)) * (180 / Math.PI)
+            console.log(aircraftInRange[i][0]["callsign"], planeVector, score)
             //getting lowest angle of deviance
             if (score < bestMatch[2] && score < max_acceptable_angle) {
                 aircraftInRange[i].push(score)
