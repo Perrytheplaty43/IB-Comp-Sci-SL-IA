@@ -500,8 +500,8 @@ class Server {
         })
         console.log(allScores)
         //returning lowest angle of divance
-        if (bestMatch[0]) {
-            return await bestMatch[0].getInfo()
+        if (allScores[0][0]) {
+            return await allScores[0][0].getInfo()
         } else {
             return "none"
         }
