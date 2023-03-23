@@ -17,6 +17,7 @@ const serverIP = "73.169.132.52:81"
 //ssl t/f
 const ssl = false
 
+//declaring gloabal information object
 let infoG = {"image": "none"}
 
 let animatedValue = new Animated.Value(0)
@@ -36,7 +37,8 @@ export default function App() {
     const [info, setInfo] = useState({})
     const [isNoResults, setIsNoResults] = useState(false)
     const [displayingInfo, setDisplayingInfo] = useState(false)
-
+    
+    //setting animation
     const fadeAnim = useRef(new Animated.Value(0)).current
 
     //getting location and camera permissions
@@ -157,6 +159,7 @@ export default function App() {
         fadeAnim.setValue(0)
     }
 
+    //showing more detailed information
     function showAllInfo() {
         setToShow(false)
         setToShow2(true)
@@ -167,6 +170,7 @@ export default function App() {
         }).start();
     }
 
+    //funtion gets called when the image of the aircraft is loaded
     function imagesOnLoad() {
         setIsLoading(false)
     }
@@ -238,21 +242,6 @@ export default function App() {
                             <Text style={styles.info2}>Owners: <Text style={styles.data2}>{!info["registered owners"] ? "N/A" : info["registered owners"]}</Text></Text>
                         </View>
                         <Text style={styles.sperator}>{"\n"}</Text>
-
-                        {/* data4 */}
-                        {/* <View style={styles.infoDiv4}>
-                            <Text style={styles.info3}>Downlink Format: <Text style={styles.data3}>{info["downlink format"]}</Text></Text>
-                            <Text style={styles.info3}>Transponder Capability: <Text style={styles.data3}>{info["transponder capability"]}</Text></Text>
-                            <Text style={styles.info3}>Time: <Text style={styles.data3}>{new Date(info["time"]).toString()}</Text></Text>
-                            <Text style={styles.info3}>Surveillance Status: <Text style={styles.data3}>{info["surveillance status"]}</Text></Text>
-                            <Text style={styles.info3}>Single Antenna: <Text style={styles.data3}>{info["single antenna"]}</Text></Text>
-                            <Text style={styles.info3}>Subtype: <Text style={styles.data3}>{info["subtype"]}</Text></Text>
-                            <Text style={styles.info3}>Velocity Uncertanty: <Text style={styles.data3}>{info["velocity uncertanty"]}</Text></Text>
-                            <Text style={styles.info3}>Vertical Rate Source: <Text style={styles.data3}>{info["vertical rate source"]}</Text></Text>
-                            <Text style={styles.info3}>IAS: <Text style={styles.data3}>{!info["ias"] ? "N/A" : info["ias"] + " kts"}</Text></Text>
-                            <Text style={styles.info3}>TAS: <Text style={styles.data3}>{!info["tas"] ? "N/A" : info["tas"] + " kts"}</Text></Text>
-                            <Text style={styles.info3}>Operator Flag Code: <Text style={styles.data3}>{!info["registered owners"] ? "N/A" : info["registered owners"]}</Text></Text>
-                        </View> */}
                     </Animated.View>
                 }
                 {isNoResults &&
