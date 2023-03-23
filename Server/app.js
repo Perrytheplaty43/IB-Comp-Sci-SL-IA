@@ -1,6 +1,8 @@
 //Delcairing Node Libraries
-let net = require('net');
-let http = require('http');
+const net = require('net');
+const http = require('http');
+const axios = require("axios");
+const cheerio = require("cheerio");
 
 //Setting tolerance constant
 const max_acceptable_angle = 31
@@ -11,13 +13,12 @@ client.connect(30002, '10.0.47.54', function () {
     console.log('Connected');
     client.write('Hello, server! Love, Client.')
 })
-
-const axios = require("axios");
-const cheerio = require("cheerio");
-
+//declairing image url cache object
 let cache = {}
 
+//method for finding image urls given a query such as a registration
 async function getPhotoByQueryJP(query) {
+    //checks cache if query was cached and if it was it returns the chached link
     if (cache[query]) {
         return {
             url: cache[query],
@@ -34,6 +35,7 @@ async function getPhotoByQueryJP(query) {
 
     let $ = cheerio.load(html.data);
 
+    //searches website for image sources
     let imageContainers = $(".result__photoLink");
 
     if (!imageContainers) {
@@ -56,11 +58,14 @@ async function getPhotoByQueryJP(query) {
 
     let id = split[split.length - 2] + "/" + split[split.length - 1];
 
+    //adding url to query
     cache[query] = `https://cdn.jetphotos.com/full/${id}`
 
+    //printing cache for debugging reasons
     console.clear()
     console.log("Image Cache:")
     console.log(cache)
+    //returning url
     return {
         url: `https://cdn.jetphotos.com/full/${id}`,
         cr: "JetPhotos",
@@ -173,7 +178,7 @@ class Contact {
                 this.tE = parseInt(bin[52], 2)
             }
 
-            //lat
+            //decoding latitude
             let j = Math.floor(59 * this.latCprEven - 60 * this.latCprOdd + 0.5)
             let dLatE = 360 / 60.0
             let dLatO = 360 / 59.0
@@ -187,7 +192,7 @@ class Contact {
             if (this.tE >= this.tO) this.lat = latE
             else this.lat = latO
 
-            //lon
+            //decoding longitude
             if (this.tE > this.tO) {
                 let nlLatE = Math.floor((2 * Math.PI) / Math.acos(1 - ((1 - Math.cos(Math.PI / 30)) / (Math.cos((Math.PI / 180) * latE) ** 2))))
                 let ni = Math.max(nlLatE, 1)
@@ -338,6 +343,7 @@ class Contact {
 let aircraftManager = new Aircrafts()
 
 class Decoder {
+    //Method for converting a hexadecimal to a string of binary
     #hex2bin(hexdec) {
         let i = 0;
         let returning = ""
