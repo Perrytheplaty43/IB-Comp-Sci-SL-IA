@@ -292,7 +292,12 @@ class Contact {
             .then(response => response.text())
             .then(data => {
                 //parsing and adding new data to the return object
-                data = JSON.parse(data)
+                try {
+                    data = JSON.parse(data)
+                } catch (err) {
+                    console.log(err)
+                    return "none"
+                }
                 this.manufacturer = data["Manufacturer"]
                 this.operatorFlagCode = data["OperatorFlagCode"]
                 this.registeredOwners = data["RegisteredOwners"]
