@@ -5,7 +5,7 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 
 //Setting tolerance constant
-const max_acceptable_angle = 31
+const max_acceptable_angle = 16
 
 //connecting to ads-b raw data tcp socket
 let client = new net.Socket();
